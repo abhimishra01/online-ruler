@@ -6,6 +6,15 @@
   border-bottom: 1px solid var(--line);
   touch-action: pan-y; user-select: none; -webkit-user-select: none;
 }
+/* Ruler thickness is set here from the page's own data, so the first paint already has its final layout.
+   The script uses the same numbers (see thick() in stage.js). */
+.stage { --t: 52px; }
+.stage[data-unit="both"] { --t: 80px; }
+@media (max-width: 599px) { .stage { --t: 46px; } .stage[data-unit="both"] { --t: 72px; } }
+.stage[data-edges*="top"] { --rt: var(--t); }
+.stage[data-edges*="right"] { --rr: var(--t); }
+.stage[data-edges*="bottom"] { --rb: var(--t); }
+.stage[data-edges*="left"] { --rl: var(--t); }
 .stage:fullscreen { height: 100vh; }
 .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .hit { position: absolute; z-index: 4; touch-action: none; cursor: crosshair; }
@@ -23,6 +32,14 @@
 .head h1 { font-size: 1.125rem; line-height: 1.25; font-weight: 750; letter-spacing: -0.02em; max-width: 36ch; text-wrap: balance; }
 .head .lede { margin-top: 2px; font-size: 0.9375rem; color: var(--muted); max-width: 52ch; }
 .head .hint { margin-top: 4px; font-size: 0.8125rem; color: var(--muted); }
+/* Shown by CSS, not by the script, so they never move the page after it loads. */
+.hint-full { display: none; }
+@media (hover: hover) and (pointer: fine) { .hint-full { display: block; } }
+.hint-rotate { display: none; }
+@media (max-width: 599px) and (orientation: portrait) { .hint-rotate { display: block; } }
+.badge { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 10px; background: #15803d; color: #fff; font-size: 0.9375rem; font-weight: 700; }
+.badge[hidden] { display: none; }
+:root[data-theme="dark"] .badge { background: #4ade80; color: #052e16; }
 .stage[data-phone="1"] .head h1 { font-size: 1rem; }
 .stage[data-phone="1"] .head .lede { display: none; }
 
@@ -139,7 +156,7 @@
 .toast[hidden] { display: none; }
 .noscript { position: absolute; z-index: 9; inset: 40% 16px auto; text-align: center; font-weight: 600; }
 
-.sticky-row { position: sticky; bottom: -16px; background: var(--card); padding: 8px 0 12px; margin-bottom: -4px; }
+.sticky-row { position: sticky; bottom: -16px; z-index: 1; background: var(--card); padding: 8px 0 12px; margin-bottom: -4px; }
 .tabs { flex-wrap: nowrap; overflow-x: auto; }
 .tabs button { flex: none; }
 @media (max-width: 700px) {

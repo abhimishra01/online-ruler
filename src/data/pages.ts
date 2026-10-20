@@ -22,7 +22,7 @@ export const pages: RulerPage[] = [
       {
         h2: 'Quick start in 3 steps',
         html: `<ol>
-<li><strong>Calibrate.</strong> Press the status button at the top of the ruler. Hold a credit card against the screen and match its edges to the outline. This takes about 20 seconds.</li>
+<li><strong>Calibrate.</strong> Press the status chip at the top left of the ruler (it says "Not calibrated"). Hold a credit card against the screen and match its edges to the outline. This takes about 20 seconds.</li>
 <li><strong>Pick a unit.</strong> Choose cm, mm, inches or pixels. You can also show cm and inches together.</li>
 <li><strong>Measure.</strong> Put your object against the ruler, with one end at the zero mark in the corner. Pull a guide out of the ruler to mark the other end. The length appears at the bottom of the ruler.</li>
 </ol>
@@ -66,6 +66,33 @@ export const pages: RulerPage[] = [
 <p>Hold the object flat and close to the glass. If it sits high above the screen, the angle of view makes it look larger or smaller than it is. Look straight at the edge you are reading.</p>`,
       },
       {
+        h2: 'A worked example: measuring a screw',
+        html: `<p>Say you want the length of a wood screw. Here is the full routine, from start to finish.</p>
+<ol>
+<li>Calibrate with a card and run the check step. The status chip should read "Calibrated with card, checked".</li>
+<li>Choose millimeters. Screw sizes are often given in mm, such as 4 x 40.</li>
+<li>Lay the screw flat on the glass, below the top ruler. Put the flat of the head against the left ruler, or against a guide set at zero.</li>
+<li>Press Add guide, then drag the guide to the tip of the screw. The readout shows the length, for example "40 mm = 4 cm = 1 9/16 in".</li>
+<li>Look straight down at the tip while you place the guide. If you look from the side, the guide appears to move.</li>
+</ol>
+<p>Measure twice, and take the middle value if the two differ. A screen shows whole pixels, so a reading is only as fine as the pixel grid on your screen. On most phones the grid is finer than a tenth of a millimeter. On a standard monitor one pixel is about a quarter of a millimeter.</p>`,
+      },
+      {
+        h2: 'Common mistakes to avoid',
+        html: `<ul>
+<li><strong>Skipping the calibration.</strong> The first screen is an estimate. Use the card step before you rely on a number.</li>
+<li><strong>Changing the zoom afterwards.</strong> Chrome, Edge and Firefox keep the scale when you zoom the page, but Safari and display scaling changes can break it. If in doubt, calibrate again.</li>
+<li><strong>Using a bent or worn card.</strong> A card with a warped edge is hard to line up. Pick a flat one. A coin is a good second check, because its edge is a clean circle.</li>
+<li><strong>Looking from an angle.</strong> The glass has a small gap above the pixels. A sideways view moves the object relative to the marks. Look straight down.</li>
+<li><strong>Measuring something thick.</strong> A tall object casts the edge away from the screen. Measure flat things, or measure at the base.</li>
+<li><strong>Trusting a stretched screen.</strong> If your monitor is set to a resolution with a different shape than the panel, everything is stretched. Use the native resolution, or calibrate with the card, which shows the true size of what you see.</li>
+</ul>`,
+      },
+      {
+        h2: 'Which pages to use',
+        html: `<p>All the pages share one tool and one saved calibration. Pick the page that matches the scale you read most. The <a href="@cm/">cm ruler</a> and the <a href="@mm/">mm ruler</a> suit metric work. The <a href="@inches/">inch ruler</a> reads fractions down to 1/16. The <a href="@actual-size/">actual size ruler</a> opens the calibration first and explains the method in detail. On a phone, open the <a href="@phone/">phone ruler</a>, which puts the ruler down the long edge of the screen.</p>`,
+      },
+      {
         h2: 'Limits you should know',
         html: `<ul>
 <li><strong>Length.</strong> The ruler can only be as long as your screen. A 6.1 inch phone has a screen about 14 cm tall, so it fits small objects. A laptop screen is wider, from about 29 to 34 cm. For long objects, use a real ruler or a tape measure.</li>
@@ -95,7 +122,7 @@ export const pages: RulerPage[] = [
         h2: 'A centimeter ruler for your screen',
         html: `<p>This page opens the online ruler in centimeters. Each numbered mark is 1 cm. Each small mark is 1 mm, and the middle mark between two numbers is 5 mm. The zero mark sits in the top left corner.</p>
 <p>To measure, put one end of the object at zero. Then pull a guide out of the ruler and move it to the other end. The tool shows the length, for example "9.21 cm = 92.1 mm = 3 5/8 in". Press Copy to put the text on your clipboard.</p>
-<p>For a true size ruler, calibrate first. Press the status button and match a credit card to the outline. The status then reads "Calibrated with card".</p>`,
+<p>For a true size ruler, calibrate first. Press the status chip at the top left, open the Card tab, and match a credit card to the outline. The status then reads "Calibrated with card".</p>`,
       },
       {
         h2: 'Centimeters and millimeters',
@@ -125,6 +152,22 @@ export const pages: RulerPage[] = [
 </ol>
 <p>The ruler works the same on a phone. Turn the phone sideways for more length. See the <a href="@phone/">phone ruler page</a> for tips.</p>`,
       },
+      {
+        h2: 'Reading a centimeter ruler, step by step',
+        html: `<p>Put the object at zero. Find the last numbered mark before the end of the object. That number is the whole centimeters. Then count the small marks after it. Each small mark is one millimeter.</p>
+<p>Example: an object ends 3 marks after the 7. That is 7 cm and 3 mm, which you write as 7.3 cm. The tool does this for you when you use a guide, but the same steps work when you read the marks by eye.</p>
+<p>Half-centimeter marks help. The middle mark between two numbers is 5 mm, and it is a little longer than the others. If an object ends at that mark, add 0.5 cm to the last whole number.</p>`,
+      },
+      {
+        h2: 'Common sizes in centimeters',
+        html: `<p>These reference sizes are handy for a quick check. A credit card is 8.56 cm by 5.398 cm. A US quarter is 2.426 cm across. A US dime is 1.791 cm across. A sheet of A4 paper is 21.0 cm by 29.7 cm. A US Letter sheet is 21.59 cm by 27.94 cm. All of these come from standards or the US Mint.</p>
+<p>If you have one of these on your desk, lay it on the screen and compare. This is the same idea as the check step, and it takes five seconds.</p>`,
+      },
+      {
+        h2: 'When centimeters are the right choice',
+        html: `<p>Use centimeters when you want a number that is easy to say and to write. 12.4 cm is quicker to communicate than 124 mm, and it avoids the fractions of an inch. Most countries use metric for clothing, furniture and packaging, so centimeters are the usual unit in shops and online listings.</p>
+<p>If a form asks for millimeters, switch to the <a href="@mm/">mm ruler</a>. If a pattern is in inches, switch to the <a href="@inches/">inch ruler</a>. Your calibration stays the same, so you do not need to repeat it.</p>`,
+      },
     ],
   },
   {
@@ -140,7 +183,7 @@ export const pages: RulerPage[] = [
       {
         h2: 'An inch ruler with 1/16 marks',
         html: `<p>This page opens the online ruler in inches. Each long mark with a number is a whole inch. The mark in the middle is 1/2 inch and carries a small "&frac12;" label. Shorter marks show 1/4, 1/8 and 1/16.</p>
-<p>Pull a guide out of the ruler to mark the end of your object. The tool rounds the length to the nearest 1/16 and shows it as a reduced fraction, such as "3 5/8 in". It also shows the decimal value (3.626 in) and the millimeter value, so you can copy the form you need.</p>
+<p>Pull a guide out of the ruler to mark the end of your object. The tool rounds the length to the nearest 1/16 and shows it as a reduced fraction, such as "3 5/8 in". It also shows the decimal value (3.625 in) and the millimeter value, so you can copy the form you need.</p>
 <p>Calibrate first. A card is 3 3/8 in wide and 2 1/8 in tall, which is a good check on the ruler once you have calibrated it.</p>`,
       },
       {
@@ -169,6 +212,25 @@ export const pages: RulerPage[] = [
 <li>Use full screen (F) to give the ruler the whole display.</li>
 <li>Check the result with a coin after you calibrate. If it does not fit, calibrate again.</li>
 </ul>`,
+      },
+      {
+        h2: 'Inch fractions at a glance',
+        html: `<p>The ruler marks every 1/16 inch. The mark length tells you the fraction. The longest mark between two numbers is 1/2. The next length is 1/4 and 3/4. Then 1/8, 3/8, 5/8 and 7/8. The shortest marks are the odd sixteenths.</p>
+<p>A quick way to read a fraction: count the marks past the last whole inch, and write the count over 16. If the count is even, halve both numbers until the count is odd. Six marks past 2 inches is 6/16, which is 3/8, so the length is 2 3/8 in.</p>
+<p>Many tape measures stop at 1/16, and so does this tool. If a plan asks for 1/32, use the decimal value from the readout and convert it with the chart on this page.</p>`,
+      },
+      {
+        h2: 'Measuring common household things',
+        html: `<ul>
+<li><strong>Picture frames and prints.</strong> Standard print sizes are whole inches, such as 4 x 6 and 5 x 7. Check that your print fits the mat opening, which is usually a little smaller.</li>
+<li><strong>Hardware.</strong> Bolts, nuts and washers use fractions of an inch. A 1/4 inch bolt has a shaft 6.35 mm wide. Lay it on the screen and read the width with two guides.</li>
+<li><strong>Lumber.</strong> A board sold as 2 x 4 is smaller than its name. The finished size in the US is 1 1/2 by 3 1/2 inches. Measure the actual piece when it matters.</li>
+<li><strong>Crafts.</strong> Quilt squares, beads and ribbon are often given in inches and sixteenths.</li>
+</ul>`,
+      },
+      {
+        h2: 'Inches and millimeters together',
+        html: `<p>Some jobs use both units. A part may be drawn in inches but sold in millimeters. Choose the "cm + in" view on the <a href="@">main ruler</a> to see both scales along the same edge. The readout also gives the millimeter value for every guide, so you can copy the unit the other person needs.</p>`,
       },
     ],
   },
@@ -203,6 +265,22 @@ export const pages: RulerPage[] = [
 <li>Tape, ribbon and cord widths.</li>
 </ul>
 <p>For round things, place the part so its edges touch two guides, and read the gap. For small parts, use the crosshair (press C) to see the exact spot under your finger or cursor.</p>`,
+      },
+      {
+        h2: 'How to read a millimeter ruler',
+        html: `<p>Find the last number before the end of the object. The numbers are in millimeters here, and they appear every 10 mm. Then count the small marks after it. Each one is 1 mm. A mark at 37 means 37 mm, which is 3.7 cm.</p>
+<p>The longer mark between two numbers is 5 mm. It helps your eye find the middle. If the object ends exactly on it, add 5 to the last number.</p>
+<p>For half a millimeter, estimate by eye, or use the arrow keys on a guide. With snap on, a guide moves in whole millimeters. Turn snap off if you need finer steps.</p>`,
+      },
+      {
+        h2: 'Reference sizes in millimeters',
+        html: `<p>You can check the scale with objects of known size. A credit card is 85.60 by 53.98 mm. A US cent is 19.05 mm, a nickel is 21.21 mm, a dime is 17.91 mm and a quarter is 24.26 mm. A euro 2 cent coin is 18.75 mm. A US Letter sheet is 215.9 mm wide, and an A4 sheet is 210 mm wide.</p>
+<p>The coin sizes come from the US Mint and the European Commission. Both publish their sizes, so you can verify them.</p>`,
+      },
+      {
+        h2: 'Why a screen ruler has limits in mm',
+        html: `<p>A screen is made of pixels, and a pixel has a size. On a typical laptop one millimeter is only four or five pixels. The ruler can only draw a mark on a pixel, so each mark may sit up to half a pixel from its ideal place. On a phone the pixels are smaller, which helps.</p>
+<p>The match to the card also has a limit, because you line up two edges by eye. Expect small errors. For a part that must fit within a tenth of a millimeter, use calipers. A screen ruler is a quick check, not a replacement for a measuring tool.</p>`,
       },
       {
         h2: 'Tips for the mm ruler',
@@ -241,7 +319,7 @@ export const pages: RulerPage[] = [
         h2: 'The credit card method',
         html: `<p>Credit and debit cards follow ISO/IEC 7810 ID-1: 85.60 by 53.98 mm. That is 3 3/8 by 2 1/8 inches. The size is the same all over the world.</p>
 <ol>
-<li>Open Calibrate and choose Credit card.</li>
+<li>Press the status chip at the top left of the tool, then open the Card tab.</li>
 <li>Hold the card flat against the screen. Line up one edge with the outline.</li>
 <li>Drag the grip on the right edge until the other edge matches. Zoom in with your eyes: look straight at the screen, not at an angle.</li>
 <li>Use the 0.1 mm buttons, or the arrow keys on the grip, for fine changes.</li>
@@ -260,6 +338,26 @@ export const pages: RulerPage[] = [
         html: `<p>The calibration is saved for this screen in your browser. A laptop and an external monitor each keep their own record. If you drag the window to another monitor, the tool notices and offers to calibrate it, or to reuse a saved one. Nothing is sent to a server.</p>
 <p>Display scaling matters. If you change it, calibrate again. After calibration, go to the <a href="@">full online ruler</a> to measure.</p>`,
       },
+      {
+        h2: 'Pixels, CSS pixels and device pixels',
+        html: `<p>Three words come up often, so here is what each one means.</p>
+<ul>
+<li><strong>Device pixel.</strong> One physical dot on the panel. It has a real size, which depends on the hardware.</li>
+<li><strong>CSS pixel.</strong> The unit a web page uses. Browsers map it to device pixels. On a laptop with a high-density panel, one CSS pixel may use four device pixels.</li>
+<li><strong>Device pixel ratio.</strong> The number of device pixels in one CSS pixel along one side. Zooming the page changes it.</li>
+</ul>
+<p>The tool stores device pixels per millimeter, which does not change when you zoom. That is why the scale holds in most browsers when you press Ctrl and plus. The card tells the tool how long a millimeter is in device pixels, and everything else follows from that.</p>`,
+      },
+      {
+        h2: 'How exact is the result?',
+        html: `<p>We have not measured the accuracy on a set of devices yet, so we do not quote a figure. What we can say is how the error arises. When you match a card, you line up an edge by eye, so your match is only as good as your eyesight and the width of one pixel. The device and screen size methods trust a number printed by the maker, so their error is larger.</p>
+<p>To keep the error small, hold the card flat and close to the glass, look straight down, and use the 0.1 mm buttons to fine-tune. Then run the check step. If a second object fits too, your scale is good for most small jobs.</p>`,
+      },
+      {
+        h2: 'When to calibrate again',
+        html: `<p>Calibrate again if you change the display scaling or the resolution in the system settings, or if you plug in a new monitor. The tool notices a new screen and asks you. A calibration is also worth redoing if you used a quick method first and later need a better result.</p>
+<p>You do not need to calibrate again after a restart, or on another day. The saved value stays in your browser until you reset it or clear the site data.</p>`,
+      },
     ],
   },
   {
@@ -269,18 +367,54 @@ export const pages: RulerPage[] = [
     h1: 'Online Ruler for Phone: Measure on Your Screen',
     lede: 'A ruler on your phone screen. Calibrate with a card, then lay a small object on the glass.',
     crumb: 'Phone ruler',
-    unit: 'both', edges: 'left,top',
+    unit: 'both', edges: 'left',
     faq: ['phone', 'camera', 'devices', 'accurate', 'card', 'free'],
     sections: [
       {
         h2: 'A ruler on your phone screen',
-        html: `<p>This page puts the online ruler on your phone. The vertical ruler runs along the long edge of the screen, and there is a second ruler across the top. The unit switch is above the ruler. Use cm and inches together, or pick one.</p>
+        html: `<p>This page puts the online ruler on your phone. The ruler runs down the left edge of the screen, along its long side, so a phone held upright gives the most length. The unit switch is above the ruler. Use cm and inches together, or pick one. If you need a ruler across the top as well, turn it on in Options.</p>
 <p>Calibrate first. A phone is a small, dense screen, and an uncalibrated ruler is only a guess. Hold a credit card against the screen and match it. On a phone the card is shown on its short side, because the long side is wider than the screen.</p>`,
       },
       {
         h2: 'How long can a phone ruler be?',
         html: `<p>It can be as long as the screen. A 6.1 inch phone with a 19.5:9 screen is about 14 cm tall. Larger phones reach about 15 to 16 cm. A tablet gives more. Turn the phone sideways to use the long edge for a horizontal ruler.</p>
 <p>For anything longer, use a real ruler or a tape measure. A phone ruler is for small flat objects: a coin, a key, a screw, a bead, a stamp or a label.</p>`,
+      },
+      {
+        h2: 'How to calibrate on a phone',
+        html: `<ol>
+<li>Open the page and press the status chip at the top left, where it says "Not calibrated".</li>
+<li>Hold a credit card flat on the screen. The outline shows the short side of the card, 53.98 mm, because the long side is wider than most phones.</li>
+<li>Drag the grip on the right of the outline until the card edge matches it. Use the 0.1 mm buttons to fine-tune.</li>
+<li>Press "My card matches". The tool then shows a coin outline. Lay a coin on it to check.</li>
+</ol>
+<p>Keep your phone still and look straight at the screen. A phone on a table works better than one in your hand.</p>`,
+      },
+      {
+        h2: 'Measuring with the vertical ruler',
+        html: `<p>On a phone held upright, the ruler runs down the left edge. That is the long side of the screen, so it gives the most length. Place the object next to it with one end at zero.</p>
+<p>Press Add guide. A horizontal line appears. Drag it to the other end of the object. The readout shows the length in the units you chose. If you want to mark both ends, pull a second guide out of the ruler. The readout then shows the gap between the two guides.</p>
+<p>The controls hide when you open the calibration, so the whole screen is free for the card.</p>`,
+      },
+      {
+        h2: 'What fits on a phone screen',
+        html: `<p>A phone screen is small, so pick the right objects. These fit on a 6.1 inch phone, which has a screen about 14 cm tall and 6.5 cm wide.</p>
+<ul>
+<li>Coins, keys, SIM cards and memory cards.</li>
+<li>Screws, bolts, nails and small tools.</li>
+<li>Beads, buttons, earrings and charms.</li>
+<li>Stamps, tickets and business cards. A business card is often 3.5 by 2 inches in the US, so it fits across the phone.</li>
+</ul>
+<p>A US dollar bill is 6.14 inches long, which is about 15.6 cm. It will not fit on most phones, so use a tablet or a computer.</p>`,
+      },
+      {
+        h2: 'Troubleshooting on a phone',
+        html: `<ul>
+<li><strong>The ruler looks too big or too small.</strong> Calibrate again. Check that pinch zoom is off.</li>
+<li><strong>The browser bars move.</strong> The address bar can hide and show as you scroll. This changes the screen height but not the scale.</li>
+<li><strong>The result changed after rotating.</strong> The scale stays the same in both directions. If it did not, calibrate again and tell us.</li>
+<li><strong>The screen goes dark.</strong> The page asks the phone to stay awake, but some browsers do not allow it. Raise the screen timeout in the phone settings.</li>
+</ul>`,
       },
       {
         h2: 'Tips for iPhone and Android',

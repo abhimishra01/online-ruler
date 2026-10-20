@@ -4,9 +4,9 @@ import {
 } from '../src/lib/units.js';
 import {
   CARD, cssPxPerMm, devPxPerMmFromObject, panelFromDiagonal, devPxPerMmFromPanel, estimateCssPxPerMm, screenSignature,
-  emptyStore, parseStore, pickProfile, withProfile, withoutProfile, loadStore, saveStore, statusFor, STORE_KEY,
+  emptyStore, parseStore, pickProfile, pickCheckObject, withProfile, withBorrowed, withoutProfile, loadStore, saveStore, statusFor, STORE_KEY,
 } from '../src/lib/calibration.js';
-import { COINS, PAPER, deviceList, searchDevices, panelFor } from '../src/lib/reference.js';
+import { COINS, PAPER, deviceList, searchDevices, panelFor, popularDevices, platformOf, SOURCE_HOSTS } from '../src/lib/reference.js';
 
 let checks = 0;
 const eq = (a, b, msg) => { checks++; assert.deepEqual(a, b, msg); };
@@ -137,6 +137,16 @@ eq(screenSignature(1280, 800, 2), '2560x1600');
   eq(pickProfile(s, '2880x1800').state, 'match');
   eq(pickProfile(s, '1920x1080').state, 'other');
   eq(pickProfile(emptyStore(), '1920x1080').state, 'none');
+  // "Use the saved one" is stored for the current screen and survives a reload.
+  const b = withBorrowed(s, '1920x1080', '2880x1800');
+  eq(pickProfile(b, '1920x1080').state, 'borrowed');
+  eq(pickProfile(b, '1920x1080').profile.devPxPerMm, 7.5);
+  eq(pickProfile(parseStore(JSON.stringify(b)), '1920x1080').state, 'borrowed', 'borrow survives save and load');
+  eq(pickProfile(b, '1366x768').state, 'other', 'another screen is still asked');
+  eq(pickProfile(withProfile(b, '1920x1080', { method: 'card', devPxPerMm: 5, ts: 2 }), '1920x1080').state, 'match', 'calibrating this screen ends the borrow');
+  eq(pickProfile(withoutProfile(b, '1920x1080'), '1920x1080').state, 'other', 'reset removes the borrow');
+  eq(pickProfile(withoutProfile(b, '2880x1800'), '1920x1080').state, 'none', 'deleting the source drops the borrow');
+  eq(withBorrowed(s, '1920x1080', 'nope'), s, 'cannot borrow a missing profile');
   const round = parseStore(JSON.stringify(s));
   eq(round.active, '2880x1800');
   eq(withoutProfile(round, '2880x1800'), emptyStore());
@@ -149,11 +159,19 @@ eq(screenSignature(1280, 800, 2), '2560x1600');
   eq(loadStore(blocked), emptyStore(), 'blocked storage gives an empty store');
   eq(saveStore(blocked, s), false, 'blocked storage does not throw');
 }
+// ---- check step uses a different object
+eq(pickCheckObject('card'), 'us-quarter');
+eq(pickCheckObject('us-quarter'), 'card', 'a coin is checked with the card');
+eq(pickCheckObject('letter'), 'card');
+eq(pickCheckObject(null), 'card');
+for (const used of ['card', 'us-quarter', 'us-dime', 'eu-2e', 'a4', null]) eq(pickCheckObject(used) !== used, true, `check object differs from ${used}`);
 // ---- status words
 eq(statusFor(null).kind, 'estimate');
 eq(/calibrated/i.test(statusFor(null).text) && !/not calibrated/i.test(statusFor(null).text), false, 'estimate never says calibrated');
 eq(/^Calibrated/.test(statusFor({ method: 'device' }).text), false, 'device shortcut is not called calibrated');
 eq(statusFor({ method: 'card' }).text, 'Calibrated with card');
+eq(statusFor({ method: 'card', verified: true }, true).kind, 'device', 'a borrowed calibration is never called calibrated');
+eq(/^Calibrated/.test(statusFor({ method: 'card', verified: true }, true).text), false);
 eq(statusFor({ method: 'card', verified: true }).text, 'Calibrated with card, checked');
 for (const t of [statusFor(null).text, statusFor({ method: 'card' }).text]) eq(/\d\s*(%|percent)/i.test(t), false, 'no accuracy numbers in the chip');
 
@@ -166,14 +184,39 @@ eq(COINS.find((c) => c.id === 'us-cent').mm, 19.05);
 eq(new Set(COINS.map((c) => c.id)).size, COINS.length, 'coin ids are unique');
 {
   const list = deviceList();
-  eq(list.length > 50, true, 'device list has entries');
+  eq(list.length > 60, true, 'device list has entries');
   eq(new Set(list.map((d) => d.id)).size, list.length, 'device ids are unique');
+  eq(new Set(list.map((d) => d.name)).size, list.length, 'device names are unique');
   eq(list.every((d) => d.diag > 3 && d.diag < 100 && d.aspect >= 1 && d.aspect < 4), true, 'sane diagonals and aspects');
+  eq(list.some((d) => d.brand === 'Generic'), false, 'no generic rows: the Size tab covers them');
+  // Every row names a manufacturer page and its density is plausible.
+  for (const d of list) {
+    const u = new URL(d.source);
+    eq(u.protocol === 'https:' && SOURCE_HOSTS.includes(u.hostname), true, `${d.name}: source must be an https manufacturer page`);
+    const ppi = Math.hypot(d.w, d.h) / d.diag;
+    eq(ppi >= 80 && ppi <= 700, true, `${d.name}: ${Math.round(ppi)} ppi is not plausible`);
+  }
+  // Current models must be findable by the names people type.
+  for (const q of ['iphone 17', 'iphone air', 'pixel 10', 'galaxy s25', 'macbook air m4', 'ipad pro m5', 'steam deck oled', 'xps 13 plus', 'surface pro']) {
+    eq(searchDevices(q).length > 0, true, `search finds "${q}"`);
+  }
+  near(list.find((d) => d.name === 'Steam Deck OLED').diag, 7.4, 0, 'Steam Deck OLED is 7.4 in');
+  near(list.find((d) => /iPad Pro 11/.test(d.name)).diag, 11.1, 0, 'iPad Pro 11 is 11.1 in');
   const hit = searchDevices('macbook air 13');
   eq(hit.length > 0 && /macbook air/i.test(hit[0].name), true, 'search finds a MacBook Air');
   eq(searchDevices('zzzzqq').length, 0);
   const iphone = list.find((d) => /iPhone 15$/.test(d.name));
   near(panelFor(iphone).longMm, 140.7, 1.5, 'iPhone 15 screen is about 140.7 mm tall');
+  // Platform-aware first screen.
+  eq(platformOf({ userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)', platform: 'iPhone' }), 'ios');
+  eq(platformOf({ userAgent: 'Mozilla/5.0 (Macintosh)', platform: 'MacIntel', maxTouchPoints: 5 }), 'ios', 'iPad in desktop mode');
+  eq(platformOf({ userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X)', platform: 'MacIntel' }), 'mac');
+  eq(platformOf({ userAgent: 'Mozilla/5.0 (Linux; Android 15; Pixel 9)', platform: 'Linux armv8l' }), 'android');
+  eq(platformOf({ userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', platform: 'Win32' }), 'windows');
+  for (const p of ['ios', 'android', 'mac', 'windows']) {
+    const pop = popularDevices(p);
+    eq(pop.length > 0 && pop.every((d) => d.platform === p), true, `popular list for ${p} is its own platform`);
+  }
 }
 
 console.log(`ok: ${checks} checks passed`);

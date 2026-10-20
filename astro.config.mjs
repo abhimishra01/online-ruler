@@ -6,8 +6,9 @@ import site from './src/site.config.ts';
 
 const bingemind = site.bingemind;
 // The Bingemind root owns robots.txt, so this mode does not emit one.
-const dropRobots = { name: 'drop-robots', hooks: { 'astro:build:done': async ({ dir }) => {
-  if (bingemind) await rm(new URL('robots.txt', dir), { force: true });
+// It also owns ads.txt, so the tool's own copy would sit at the wrong address.
+const dropRoot = { name: 'drop-root-files', hooks: { 'astro:build:done': async ({ dir }) => {
+  if (bingemind) for (const f of ['robots.txt', 'ads.txt']) await rm(new URL(f, dir), { force: true });
 } } };
 
 export default defineConfig({
@@ -18,6 +19,7 @@ export default defineConfig({
   output: 'static',
   trailingSlash: 'always',
   compressHTML: true,
-  integrations: [sitemap(), dropRobots],
+  // Only the Bingemind build is indexed, so only it gets a sitemap (its URLs match the canonical links).
+  integrations: bingemind ? [sitemap(), dropRoot] : [dropRoot],
   vite: { plugins: [tailwindcss()] },
 });

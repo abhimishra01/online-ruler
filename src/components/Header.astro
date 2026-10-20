@@ -8,6 +8,7 @@ const links = [
   { href: '/about/', label: 'About' },
   { href: '/contact/', label: 'Contact' },
 ];
+const rulers = [{ href: '/cm/', label: 'Ruler in cm' }, { href: '/inches/', label: 'Inch ruler' }, { href: '/mm/', label: 'Ruler in mm' }, { href: '/actual-size/', label: 'Actual size ruler' }, { href: '/phone/', label: 'Phone ruler' }];
 ---
 <header class="sticky top-0 z-20 h-14 border-b border-line bg-paper/90 backdrop-blur">
   <div class="mx-auto flex h-full max-w-5xl items-center justify-between gap-4 px-4">
@@ -22,6 +23,14 @@ const links = [
             class="rounded-full px-3 py-2.5 text-sm font-medium text-muted no-underline hover:text-ink aria-[current=page]:text-ink aria-[current=page]:bg-brand-soft">{l.label}</a>
         ))}
       </nav>
+      <details class="menu relative min-[481px]:hidden">
+        <summary class="flex min-h-[44px] cursor-pointer list-none items-center rounded-full border border-edge bg-card px-4 text-sm font-semibold text-ink [&::-webkit-details-marker]:hidden">Menu</summary>
+        <nav aria-label="Menu" class="absolute right-0 top-12 z-30 flex w-56 flex-col rounded-2xl border border-edge bg-card p-2 shadow-lg">
+          {[...links, ...rulers].map((l) => (
+            <a href={url(l.href)} class="flex min-h-[44px] items-center rounded-xl px-3 text-sm font-medium text-ink no-underline hover:bg-brand-soft">{l.label}</a>
+          ))}
+        </nav>
+      </details>
       <ThemeToggle />
     </div>
   </div>

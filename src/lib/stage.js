@@ -1,11 +1,11 @@
 // The ruler stage: canvas rulers on up to four edges, drag guides, calibration and the saved record.
 // Runs only in the browser. The math lives in units.js and calibration.js and is tested without a DOM.
-import { MM_PER_IN, toFraction, fmt, readoutText, tickPlan, ticksFor, snapMm, stepMm, formatLength } from './units.js';
+import { toFraction, fmt, readoutText, tickPlan, ticksFor, snapMm, stepMm, formatLength } from './units.js';
 import {
   CARD, devPxPerMmFromObject, devPxPerMmFromPanel, panelFromDiagonal, estimateCssPxPerMm, screenSignature,
-  loadStore, saveStore, pickProfile, withProfile, withoutProfile, statusFor,
+  loadStore, saveStore, pickProfile, pickCheckObject, withProfile, withBorrowed, withoutProfile, statusFor,
 } from './calibration.js';
-import { COINS, PAPER, deviceList, searchDevices, panelFor } from './reference.js';
+import { COINS, PAPER, deviceList, searchDevices, panelFor, popularDevices, platformOf } from './reference.js';
 
 const PREFS_KEY = 'bm.ruler.prefs.v1';
 const EDGES = ['top', 'right', 'bottom', 'left'];
@@ -44,6 +44,7 @@ export function initStage() {
     profile: null,
     estDev: 0,
     otherScreen: false,
+    borrowed: false,
     calDismissed: false,
   };
   for (const e of (stage.dataset.edges || 'top,left').split(',')) if (e in S.edges) S.edges[e] = true;
@@ -73,7 +74,8 @@ export function initStage() {
     const pick = pickProfile(S.store, S.sig);
     const before = S.profile;
     S.otherScreen = pick.state === 'other';
-    S.profile = pick.state === 'match' ? pick.profile : null;
+    S.borrowed = pick.state === 'borrowed';
+    S.profile = pick.state === 'match' || pick.state === 'borrowed' ? pick.profile : null;
     return { pick, changed: before !== S.profile };
   }
   /** Device pixels per millimeter at this moment. Zoom does not change it. */
@@ -81,7 +83,9 @@ export function initStage() {
   const cssPerMm = () => devPerMm() / dprNow();
 
   // ---------- layout
-  const isPhone = () => stage.clientWidth < 600;
+  // Same rule as the CSS that sets the ruler thickness before the script runs, so nothing jumps.
+  const phoneQuery = matchMedia('(max-width: 599px)');
+  const isPhone = () => phoneQuery.matches;
   const thick = () => (S.unit === 'both' ? (isPhone() ? 72 : 80) : isPhone() ? 46 : 52);
   const tickMax = () => (S.unit === 'both' ? (isPhone() ? 22 : 24) : isPhone() ? 26 : 28);
   function layout() {
@@ -390,12 +394,13 @@ export function initStage() {
     paintStatus();
   }
   function paintStatus() {
-    const st = statusFor(S.profile);
+    const st = statusFor(S.profile, S.borrowed);
     const chip = $('chip');
     chip.dataset.kind = st.kind;
     $('chip-text').textContent = st.text;
     $('callout').hidden = !!S.profile || S.calDismissed || calOpen;
-    $('opt-reset').hidden = !S.profile;
+    $('opt-reset').hidden = !S.profile && !S.borrowed;
+    $('badge').hidden = !(S.profile && S.profile.verified && !S.borrowed);
   }
   function rerender() { layout(); paintControls(); draw(); renderReadout(); }
 
@@ -408,6 +413,10 @@ export function initStage() {
   $('opt-snap').addEventListener('change', (e) => { S.snap = e.target.checked; savePrefs(); });
   $('opt-cross').addEventListener('change', (e) => { S.cross = e.target.checked; savePrefs(); cross.hidden = true; });
   $('opt-paper').addEventListener('change', (e) => { S.paper = e.target.value; savePrefs(); draw(); });
+  $('btn-guide').addEventListener('click', () => {
+    const vertical = (S.edges.left || S.edges.right) && !(S.edges.top || S.edges.bottom);
+    addGuide(vertical ? 'y' : 'x', extentMm(vertical ? 'y' : 'x') / 2);
+  });
   $('opt-add-x').addEventListener('click', () => addGuide('x', extentMm('x') / 2));
   $('opt-add-y').addEventListener('click', () => addGuide('y', extentMm('y') / 2));
   $('opt-clear').addEventListener('click', clearGuides);
@@ -432,7 +441,7 @@ export function initStage() {
   const fsBtn = $('btn-full');
   const fsOk = !!(document.fullscreenEnabled && stage.requestFullscreen);
   fsBtn.hidden = !fsOk;
-  $('hint-full').hidden = !fsOk || coarse();
+  if (!fsOk) $('hint-full').remove();
   async function toggleFull() {
     try {
       if (document.fullscreenElement) await document.exitFullscreen(); else await stage.requestFullscreen();
@@ -477,6 +486,7 @@ export function initStage() {
     if (actions && actions.length) noticeEl.appendChild(row);
     noticeEl.hidden = false;
   }
+  let flashTimer = 0;
   function checkScreen() {
     const before = S.sig;
     const prevProfile = S.profile;
@@ -486,15 +496,18 @@ export function initStage() {
         { label: 'Calibrate this screen', primary: true, run: () => { setNotice(''); openCal(); } },
         { label: 'Use the saved one', run: () => {
           const key = S.store.active && S.store.profiles[S.store.active] ? S.store.active : Object.keys(S.store.profiles)[0];
-          S.profile = S.store.profiles[key];
+          S.store = withBorrowed(S.store, S.sig, key); // stored for this screen: it stays after a resize or a reload
+          saveStore(store$, S.store);
+          resolveProfile();
           setNotice(''); rerender();
         } },
       ]);
     } else if (pick.state === 'match' && before && before !== S.sig && prevProfile !== S.profile) {
       setNotice('Switched to the saved calibration for this screen.', []);
-      setTimeout(() => setNotice(''), 4000);
-    } else if (!(pick.state === 'other')) {
-      if (noticeEl.dataset.kind !== 'pinch') setNotice('');
+      clearTimeout(flashTimer);
+      flashTimer = setTimeout(() => setNotice(''), 4000);
+    } else if (noticeEl.dataset.kind !== 'pinch') {
+      setNotice('');
     }
     rerender();
   }
@@ -512,33 +525,34 @@ export function initStage() {
 
   // ---------- calibration panel
   let calOpen = false;
-  const cal = { tab: 'card', step: 'pick', rotated: false, cssW: 300, objId: null, kind: 'rect', verifyId: null, lastMethod: 'card' };
+  const cal = { tab: 'card', rotated: false, cssW: 300, spec: null, usedId: null };
   const tabs = ['card', 'coin', 'device', 'size'];
 
   function objectSpec() {
     if (cal.tab === 'card') {
       const portrait = cal.rotated;
-      return { kind: 'rect', wMm: portrait ? CARD.h : CARD.w, hMm: portrait ? CARD.w : CARD.h, method: 'card', name: 'credit card' };
+      return { kind: 'rect', wMm: portrait ? CARD.h : CARD.w, hMm: portrait ? CARD.w : CARD.h, method: 'card', id: 'card', name: 'credit card' };
     }
     const id = $('coin-select').value;
     const coin = COINS.find((c) => c.id === id);
-    if (coin) return { kind: 'circle', wMm: coin.mm, hMm: coin.mm, method: 'coin', name: coin.name };
+    if (coin) return { kind: 'circle', wMm: coin.mm, hMm: coin.mm, method: 'coin', id: coin.id, name: coin.name };
     const paper = PAPER.find((p) => p.id === id);
-    return { kind: 'bar', wMm: paper.w, hMm: paper.w / 8, method: 'paper', name: paper.name };
+    return { kind: 'bar', wMm: paper.w, hMm: paper.w / 8, method: 'paper', id: paper.id, name: paper.name };
   }
   function availableWidth() { return stage.clientWidth - (S.edges.left ? thick() : 0) - (S.edges.right ? thick() : 0); }
 
   function showObject(spec, startCssW) {
     objEl.hidden = false;
     objEl.dataset.kind = spec.kind;
-    cal.kind = spec.kind;
     cal.spec = spec;
     cal.cssW = startCssW;
     // Put it near the middle of the free area.
     const free = availableWidth();
     const left = (S.edges.left ? thick() : 0) + Math.max(8, (free - cal.cssW) / 2 - (stage.clientWidth > 900 ? 120 : 0));
     const top = (S.edges.top ? thick() : 0) + (isPhone() ? 30 : 140);
-    objEl.style.left = `${Math.max(8, Math.min(left, stage.clientWidth - cal.cssW - 50))}px`;
+    // Keep the outline clear of the left ruler, and leave room on the right for the grip.
+    const minLeft = (S.edges.left ? thick() : 0) + 12;
+    objEl.style.left = `${Math.max(minLeft, Math.min(left, stage.clientWidth - cal.cssW - 50))}px`;
     objEl.style.top = `${top}px`;
     sizeObject();
   }
@@ -615,8 +629,8 @@ export function initStage() {
       const spec = objectSpec();
       const cur = cssPerMm();
       let w = spec.wMm * cur;
-      if (spec.kind === 'bar' && w > availableWidth() - 40) w = availableWidth() - 40;
-      showObject(spec, Math.max(60, Math.min(w, availableWidth() - 40)));
+      if (spec.kind === 'bar' && w > availableWidth() - 62) w = availableWidth() - 62;
+      showObject(spec, Math.max(60, Math.min(w, availableWidth() - 62)));
     } else {
       objEl.hidden = true;
     }
@@ -634,7 +648,6 @@ export function initStage() {
     calOpen = true;
     calEl.hidden = false;
     $('callout').hidden = true;
-    cal.step = 'pick';
     $('cal-pick').hidden = false;
     $('cal-verify').hidden = true;
     $('cal-done').hidden = true;
@@ -687,19 +700,18 @@ export function initStage() {
     const spec = cal.spec;
     const dev = devPxPerMmFromObject(cal.cssW, spec.wMm, dprNow());
     if (!(dev > 1 && dev < 100)) { $('cal-error').textContent = 'That size looks wrong. Try again.'; return; }
-    cal.lastMethod = spec.method;
+    cal.usedId = spec.id;
     applyProfile(profileBase(spec.method, dev, { objectName: spec.name }));
     goVerify();
   }
 
   // Device and diagonal methods.
   function renderDeviceResults() {
-    const mod = { searchDevices, deviceList, panelFor };
     const q = $('dev-q').value.trim();
-    const list = q ? mod.searchDevices(q) : mod.deviceList().filter((d) => d.brand !== 'Generic').slice(0, 12);
+    const list = q ? searchDevices(q) : popularDevices(platformOf({ userAgent: navigator.userAgent, platform: navigator.platform, maxTouchPoints: navigator.maxTouchPoints }));
     const ul = $('dev-list');
     ul.replaceChildren();
-    $('dev-count').textContent = q ? `${list.length} match${list.length === 1 ? '' : 'es'}` : 'Popular devices. Type to search.';
+    $('dev-count').textContent = q ? `${list.length} match${list.length === 1 ? '' : 'es'}` : 'Popular devices for this kind of screen. Type to search.';
     for (const d of list.slice(0, 40)) {
       const li = document.createElement('li');
       const b = document.createElement('button');
@@ -709,10 +721,10 @@ export function initStage() {
       b.querySelector('.dn').textContent = d.name;
       b.querySelector('.dd').textContent = `${d.brand}, ${d.diag} in`;
       b.addEventListener('click', () => {
-        const panel = mod.panelFor(d);
+        const panel = panelFor(d);
         const dev = devPxPerMmFromPanel(panel.longMm, Math.max(window.screen.width, window.screen.height), dprNow());
         applyProfile(profileBase('device', dev, { deviceId: d.id, objectName: d.name }));
-        cal.lastMethod = 'device';
+        cal.usedId = null;
         goVerify();
       });
       li.appendChild(b);
@@ -732,26 +744,27 @@ export function initStage() {
     const dev = devPxPerMmFromPanel(panel.longMm, Math.max(window.screen.width, window.screen.height), dprNow());
     $('cal-error').textContent = '';
     applyProfile(profileBase('diagonal', dev, { diagIn: d, aspect }));
-    cal.lastMethod = 'diagonal';
+    cal.usedId = null;
     goVerify();
   });
 
   // Verify: show a second object at its true size on the new scale.
   function checkChoices() {
     const sel = $('check-select');
-    if (sel.options.length) return;
-    const add = (id, label) => { const o = document.createElement('option'); o.value = id; o.textContent = label; sel.appendChild(o); };
-    for (const c of COINS) add(c.id, c.name);
-    add('card', 'Credit card');
-    sel.value = 'us-quarter';
+    if (!sel.options.length) {
+      const add = (id, label) => { const o = document.createElement('option'); o.value = id; o.textContent = label; sel.appendChild(o); };
+      for (const c of COINS) add(c.id, c.name);
+      add('card', 'Credit card');
+    }
+    // The object used to calibrate cannot prove the calibration, so it is not offered.
+    for (const o of sel.options) o.disabled = o.value === cal.usedId;
   }
   function paintCheck() {
-    checkChoices();
     const id = $('check-select').value;
     const coin = COINS.find((c) => c.id === id);
     const spec = coin
-      ? { kind: 'circle', wMm: coin.mm, hMm: coin.mm, name: coin.name, method: 'check' }
-      : { kind: 'rect', wMm: CARD.w, hMm: CARD.h, name: 'credit card', method: 'check' };
+      ? { kind: 'circle', wMm: coin.mm, hMm: coin.mm, id, name: coin.name, method: 'check' }
+      : { kind: 'rect', wMm: CARD.w, hMm: CARD.h, id: 'card', name: 'credit card', method: 'check' };
     cal.spec = spec;
     cal.cssW = spec.wMm * cssPerMm();
     showObject(spec, cal.cssW);
@@ -759,15 +772,11 @@ export function initStage() {
     objEl.querySelector('#obj-h').hidden = true;
   }
   function goVerify() {
-    cal.step = 'verify';
     $('cal-pick').hidden = true;
     $('cal-done').hidden = true;
     $('cal-verify').hidden = false;
-    const sel = $('check-select');
     checkChoices();
-    // Check with something different from what was used.
-    if (cal.lastMethod === 'card') sel.value = 'us-quarter'; else if (sel.value === 'card' || !sel.value) sel.value = 'card';
-    if (cal.lastMethod === 'coin' && sel.value === cal.spec.id) sel.value = 'card';
+    $('check-select').value = pickCheckObject(cal.usedId);
     paintCheck();
     $('verify-yes').focus();
   }
@@ -794,8 +803,7 @@ export function initStage() {
     objEl.querySelector('#obj-h').hidden = false;
     $('cal-verify').hidden = true;
     $('cal-pick').hidden = false;
-    const t = cal.lastMethod === 'coin' ? 'coin' : cal.lastMethod === 'card' ? 'card' : cal.lastMethod === 'paper' ? 'coin' : 'card';
-    setTab(t);
+    setTab(cal.tab === 'coin' ? 'coin' : 'card');
     $('cal-error').textContent = 'The check did not match. Try the card method again and zoom in on the edges.';
   });
   $('done-close').addEventListener('click', closeCal);
@@ -818,8 +826,5 @@ export function initStage() {
   resolveProfile();
   if (S.otherScreen) checkScreen(); else rerender();
   if (stage.dataset.openCal === '1') openCal('card');
-  // Phone hint
-  const rot = $('hint-rotate');
-  if (rot) rot.hidden = !(isPhone() && window.innerHeight > window.innerWidth);
-  window.__ruler = { S, devPerMm, cssPerMm, addGuide, openCal, draw };
+  if (/[?&]debug\b/.test(location.search)) window.__ruler = { S, devPerMm, cssPerMm, addGuide, openCal, draw };
 }

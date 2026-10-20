@@ -47,7 +47,7 @@ export function screenSignature(screenW, screenH, dpr) {
 }
 
 export function emptyStore() {
-  return { v: 1, profiles: {}, active: null };
+  return { v: 1, profiles: {}, active: null, borrowed: {} };
 }
 
 /** Parse the saved text. Bad, missing or old data gives an empty store. */
@@ -60,25 +60,42 @@ export function parseStore(text) {
   for (const [k, p] of Object.entries(data.profiles)) {
     if (p && Number.isFinite(p.devPxPerMm) && p.devPxPerMm > 0.5 && p.devPxPerMm < 200) profiles[k] = p;
   }
-  return { v: 1, profiles, active: typeof data.active === 'string' && profiles[data.active] ? data.active : null };
+  // borrowed[screen] = the screen whose calibration the user chose to reuse here.
+  const borrowed = {};
+  if (data.borrowed && typeof data.borrowed === 'object') {
+    for (const [sig, from] of Object.entries(data.borrowed)) if (typeof from === 'string' && profiles[from] && !profiles[sig]) borrowed[sig] = from;
+  }
+  return { v: 1, profiles, active: typeof data.active === 'string' && profiles[data.active] ? data.active : null, borrowed };
 }
 
-/** What to do for the current screen: use its profile, ask about a new screen, or start fresh. */
+/** What to do for the current screen: use its profile, reuse a chosen one, ask about a new screen, or start fresh. */
 export function pickProfile(store, sig) {
   if (store.profiles[sig]) return { state: 'match', profile: store.profiles[sig] };
+  const from = store.borrowed && store.borrowed[sig];
+  if (from && store.profiles[from]) return { state: 'borrowed', profile: store.profiles[from], from };
   const others = Object.keys(store.profiles);
   if (others.length > 0) return { state: 'other', profile: null, others };
   return { state: 'none', profile: null, others: [] };
 }
 
 export function withProfile(store, sig, profile) {
-  return { v: 1, profiles: { ...store.profiles, [sig]: profile }, active: sig };
+  const borrowed = { ...store.borrowed };
+  delete borrowed[sig];
+  return { v: 1, profiles: { ...store.profiles, [sig]: profile }, active: sig, borrowed };
+}
+
+/** The user chose to reuse the calibration of screen `from` on screen `sig`. Nothing is measured, so it stays approximate. */
+export function withBorrowed(store, sig, from) {
+  if (!store.profiles[from]) return store;
+  return { ...store, borrowed: { ...store.borrowed, [sig]: from } };
 }
 
 export function withoutProfile(store, sig) {
   const profiles = { ...store.profiles };
   delete profiles[sig];
-  return { v: 1, profiles, active: store.active === sig ? null : store.active };
+  const borrowed = {};
+  for (const [k, from] of Object.entries(store.borrowed || {})) if (k !== sig && from !== sig) borrowed[k] = from;
+  return { v: 1, profiles, active: store.active === sig ? null : store.active, borrowed };
 }
 
 // Storage wrappers: every call is safe when storage is blocked.
@@ -89,8 +106,17 @@ export function saveStore(storage, store) {
   try { storage.setItem(STORE_KEY, JSON.stringify(store)); return true; } catch { return false; }
 }
 
+/**
+ * Pick the object for the check step. It must differ from the object the user just matched.
+ * `usedId` is 'card', a coin id or a paper id, or null when no object was used (device and size methods).
+ */
+export function pickCheckObject(usedId) {
+  return usedId === 'card' ? 'us-quarter' : 'card';
+}
+
 /** Plain words for the status chip. "Calibrated" is only for a method where the user matched a real object. */
-export function statusFor(profile) {
+export function statusFor(profile, borrowed = false) {
+  if (profile && borrowed) return { kind: 'device', text: 'Using the calibration from another screen: approximate' };
   if (!profile) return { kind: 'estimate', text: 'Not calibrated: sizes are an estimate' };
   if (profile.method === 'device') return { kind: 'device', text: 'Set from device size: approximate' };
   if (profile.method === 'diagonal') return { kind: 'device', text: 'Set from screen size: approximate' };

@@ -6,7 +6,7 @@ export const faqBank: Record<string, { q: string; a: string }> = {
   },
   card: {
     q: 'How do I calibrate an online ruler with a credit card?',
-    a: 'Open Calibrate and choose Credit card. Hold a card flat against the screen and line up one edge with the outline. Drag the grip on the right edge until the other edge matches. Use the 0.1 mm buttons for fine changes, then press "My card matches". Then check the result with a coin.',
+    a: 'Press the status chip at the top left of the ruler, then choose the Card tab. Hold a card flat against the screen and line up one edge with the outline. Drag the grip on the right edge until the other edge matches. Use the 0.1 mm buttons for fine changes, then press "My card matches". Then check the result with a coin.',
   },
   bigsmall: {
     q: 'Why does the ruler look too big or too small?',
@@ -57,5 +57,3 @@ export const faqBank: Record<string, { q: string; a: string }> = {
     a: 'It is free and runs in the browser. There is nothing to install and no account to make.',
   },
 };
-export const faqIds = Object.keys(faqBank);
-export const faq = faqIds.map((k) => faqBank[k]);

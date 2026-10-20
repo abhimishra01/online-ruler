@@ -1,9 +1,9 @@
 // Reference objects and the device list. Pure data plus small helpers.
 // Sizes: coins come from the issuer pages named in `source`. Paper and card are standards.
-// Devices store the marketed diagonal and the native pixel size. The panel width is computed from them.
+// Devices store the manufacturer's stated diagonal and the native pixel size. The panel width is computed from them.
 import { panelFromDiagonal } from './calibration.js';
 
-const USMINT = 'https://www.usmint.gov/learn/coin-and-medal-programs/coin-specifications';
+const USMINT = 'https://www.usmint.gov/learn/coins-and-medals/circulating-coins/coin-specifications';
 const EUROPA = 'https://economy-finance.ec.europa.eu/euro/euro-coins-and-notes/euro-coins/common-sides-euro-coins_en';
 
 export const COINS = [
@@ -24,84 +24,115 @@ export const PAPER = [
   { id: 'a4', name: 'A4, 210 mm wide', w: 210, h: 297 },
 ];
 
-const SRC = {
-  Apple: 'https://www.apple.com/iphone/compare/ , https://www.apple.com/ipad/compare/ , https://www.apple.com/mac/compare/',
-  Samsung: 'https://www.samsung.com/us/mobile/',
-  Google: 'https://store.google.com/',
-  Microsoft: 'https://www.microsoft.com/surface',
-  Valve: 'https://www.steamdeck.com/',
-  Dell: 'https://www.dell.com/',
-  Generic: 'Standard marketed sizes: the diagonal you type or read from the box',
-};
+// Every device row names the manufacturer page it comes from. `diag` is the marketed diagonal as the
+// manufacturer states it (rectangle, rounded corners ignored). Pixel size is the native panel resolution.
+// To add a device: add a row, use a manufacturer spec URL, run `npm test` (it checks the URL host and the PPI).
+export const SOURCE_HOSTS = ['www.apple.com', 'support.apple.com', 'store.google.com', 'www.samsung.com', 'learn.microsoft.com', 'support.microsoft.com', 'www.steamdeck.com', 'www.dell.com'];
 
-// [brand, name, diagonal inches, native width px, native height px]
+const A = {
+  compare: 'https://www.apple.com/iphone/compare/',
+  i17: 'https://www.apple.com/iphone-17/specs/',
+  air: 'https://www.apple.com/iphone-air/specs/',
+  i16: 'https://www.apple.com/iphone-16/specs/',
+  i15: 'https://support.apple.com/en-us/111831',
+  ident: 'https://support.apple.com/en-us/108044',
+  ipad: 'https://www.apple.com/ipad/compare/',
+  ipadPro: 'https://www.apple.com/ipad-pro/specs/',
+  ipadAir: 'https://www.apple.com/ipad-air/specs/',
+  mba: 'https://www.apple.com/macbook-air/specs/',
+  mbp: 'https://www.apple.com/macbook-pro/specs/',
+  imac: 'https://www.apple.com/imac/specs/',
+  studio: 'https://www.apple.com/studio-display/specs/',
+  xdr: 'https://www.apple.com/pro-display-xdr/specs/',
+};
+const G = (slug) => `https://store.google.com/product/${slug}_specs`;
+const S = {
+  s25: 'https://www.samsung.com/us/smartphones/galaxy-s25/',
+  s25u: 'https://www.samsung.com/us/smartphones/galaxy-s25-ultra/',
+  s25e: 'https://www.samsung.com/us/smartphones/galaxy-s25-edge/',
+  s24: 'https://www.samsung.com/us/smartphones/galaxy-s24/',
+  s24u: 'https://www.samsung.com/us/smartphones/galaxy-s24-ultra/',
+};
+const MS = {
+  pro13: 'https://learn.microsoft.com/en-us/surface/tech-specs/surface-pro-snapdragon-tech-specs',
+  pro9: 'https://support.microsoft.com/en-us/surface/models/surface-pro-9-features-and-specs',
+  pro7: 'https://support.microsoft.com/en-us/surface/models/surface-pro-7-specs-and-features',
+};
+const DECK = 'https://www.steamdeck.com/en/tech';
+const XPS = 'https://www.dell.com/support/manuals/en-ai/xps-13-9320-laptop/xps-13-9320-setup-and-specifications/display';
+
+// [brand, name, diagonal inches, native width px, native height px, platform, source URL, extra search words]
 const RAW = [
-  ['Apple', 'iPhone 16 Pro Max', 6.9, 2868, 1320], ['Apple', 'iPhone 16 Pro', 6.3, 2622, 1206],
-  ['Apple', 'iPhone 16 Plus', 6.7, 2796, 1290], ['Apple', 'iPhone 16', 6.1, 2556, 1179],
-  ['Apple', 'iPhone 15 Pro Max', 6.7, 2796, 1290], ['Apple', 'iPhone 15 Pro', 6.1, 2556, 1179],
-  ['Apple', 'iPhone 15 Plus', 6.7, 2796, 1290], ['Apple', 'iPhone 15', 6.1, 2556, 1179],
-  ['Apple', 'iPhone 14 Pro Max', 6.7, 2796, 1290], ['Apple', 'iPhone 14 Pro', 6.1, 2556, 1179],
-  ['Apple', 'iPhone 14 Plus', 6.7, 2778, 1284], ['Apple', 'iPhone 14', 6.1, 2532, 1170],
-  ['Apple', 'iPhone 13 Pro Max', 6.7, 2778, 1284], ['Apple', 'iPhone 13 Pro', 6.1, 2532, 1170],
-  ['Apple', 'iPhone 13', 6.1, 2532, 1170], ['Apple', 'iPhone 13 mini', 5.4, 2340, 1080],
-  ['Apple', 'iPhone 12 Pro Max', 6.7, 2778, 1284], ['Apple', 'iPhone 12 Pro', 6.1, 2532, 1170],
-  ['Apple', 'iPhone 12', 6.1, 2532, 1170], ['Apple', 'iPhone 12 mini', 5.4, 2340, 1080],
-  ['Apple', 'iPhone 11 Pro Max', 6.5, 2688, 1242], ['Apple', 'iPhone 11 Pro', 5.8, 2436, 1125],
-  ['Apple', 'iPhone 11', 6.1, 1792, 828], ['Apple', 'iPhone XR', 6.1, 1792, 828],
-  ['Apple', 'iPhone XS Max', 6.5, 2688, 1242], ['Apple', 'iPhone XS', 5.8, 2436, 1125],
-  ['Apple', 'iPhone X', 5.8, 2436, 1125], ['Apple', 'iPhone SE (3rd generation)', 4.7, 1334, 750],
-  ['Apple', 'iPhone 8 Plus', 5.5, 1920, 1080], ['Apple', 'iPhone 8', 4.7, 1334, 750],
-  ['Apple', 'iPad (9th generation)', 10.2, 2160, 1620], ['Apple', 'iPad (10th generation)', 10.9, 2360, 1640],
-  ['Apple', 'iPad mini (6th generation)', 8.3, 2266, 1488], ['Apple', 'iPad Air 11 inch', 10.9, 2360, 1640],
-  ['Apple', 'iPad Air 13 inch', 12.9, 2732, 2048], ['Apple', 'iPad Pro 11 inch', 11, 2388, 1668],
-  ['Apple', 'iPad Pro 11 inch (M4)', 11, 2420, 1668], ['Apple', 'iPad Pro 12.9 inch', 12.9, 2732, 2048],
-  ['Apple', 'iPad Pro 13 inch (M4)', 13, 2752, 2064],
-  ['Apple', 'MacBook Air 13 inch (M1)', 13.3, 2560, 1600], ['Apple', 'MacBook Air 13 inch (M2, M3)', 13.6, 2560, 1664],
-  ['Apple', 'MacBook Air 15 inch', 15.3, 2880, 1864], ['Apple', 'MacBook Pro 13 inch', 13.3, 2560, 1600],
-  ['Apple', 'MacBook Pro 14 inch', 14.2, 3024, 1964], ['Apple', 'MacBook Pro 16 inch', 16.2, 3456, 2234],
-  ['Apple', 'MacBook Pro 15 inch (Retina)', 15.4, 2880, 1800], ['Apple', 'MacBook Pro 16 inch (2019)', 16, 3072, 1920],
-  ['Apple', 'iMac 24 inch', 23.5, 4480, 2520], ['Apple', 'iMac 27 inch (5K)', 27, 5120, 2880],
-  ['Apple', 'Studio Display', 27, 5120, 2880], ['Apple', 'Pro Display XDR', 32, 6016, 3384],
-  ['Samsung', 'Galaxy S24 Ultra', 6.8, 3120, 1440], ['Samsung', 'Galaxy S24+', 6.7, 3120, 1440],
-  ['Samsung', 'Galaxy S24', 6.2, 2340, 1080], ['Samsung', 'Galaxy S23 Ultra', 6.8, 3088, 1440],
-  ['Samsung', 'Galaxy S23+', 6.6, 2340, 1080], ['Samsung', 'Galaxy S23', 6.1, 2340, 1080],
-  ['Samsung', 'Galaxy S22 Ultra', 6.8, 3088, 1440], ['Samsung', 'Galaxy S22+', 6.6, 2340, 1080],
-  ['Samsung', 'Galaxy S22', 6.1, 2340, 1080], ['Samsung', 'Galaxy S21', 6.2, 2400, 1080],
-  ['Samsung', 'Galaxy A54', 6.4, 2340, 1080], ['Samsung', 'Galaxy A14', 6.6, 2408, 1080],
-  ['Samsung', 'Galaxy Tab S9', 11, 2560, 1600], ['Samsung', 'Galaxy Tab S9 Ultra', 14.6, 2960, 1848],
-  ['Samsung', 'Galaxy Tab A8', 10.5, 1920, 1200],
-  ['Google', 'Pixel 9 Pro XL', 6.8, 2992, 1344], ['Google', 'Pixel 9 Pro', 6.3, 2856, 1280],
-  ['Google', 'Pixel 9', 6.3, 2424, 1080], ['Google', 'Pixel 8 Pro', 6.7, 2992, 1344],
-  ['Google', 'Pixel 8', 6.2, 2400, 1080], ['Google', 'Pixel 8a', 6.1, 2400, 1080],
-  ['Google', 'Pixel 7 Pro', 6.7, 3120, 1440], ['Google', 'Pixel 7', 6.3, 2400, 1080],
-  ['Google', 'Pixel 7a', 6.1, 2400, 1080], ['Google', 'Pixel 6', 6.4, 2400, 1080],
-  ['Google', 'Pixel 6a', 6.1, 2400, 1080], ['Google', 'Pixel Tablet', 10.95, 2560, 1600],
-  ['Microsoft', 'Surface Pro (13 inch)', 13, 2880, 1920], ['Microsoft', 'Surface Pro 8 and 9', 13, 2880, 1920],
-  ['Microsoft', 'Surface Pro 7', 12.3, 2736, 1824], ['Microsoft', 'Surface Laptop 13.5 inch', 13.5, 2256, 1504],
-  ['Valve', 'Steam Deck', 7, 1280, 800], ['Dell', 'XPS 13 (1920 x 1200)', 13.4, 1920, 1200],
-  ['Dell', 'XPS 13 (3456 x 2160)', 13.4, 3456, 2160],
-  ...[11.6, 12.5, 14, 15.6, 17.3].map((d) => ['Generic', `Windows laptop ${d} inch (16:9)`, d, 1920, 1080]),
-  ...[13.3, 14, 15.6, 16].map((d) => ['Generic', `Windows laptop ${d} inch (16:10)`, d, 1920, 1200]),
-  ...[13.5, 14].map((d) => ['Generic', `Laptop ${d} inch (3:2)`, d, 2256, 1504]),
-  ...[11.6, 14].map((d) => ['Generic', `Chromebook ${d} inch`, d, 1366, 768]),
-  ...[19, 21.5, 22, 23, 23.8, 24, 24.5, 25, 27, 28, 31.5, 32, 43].map((d) => ['Generic', `Monitor ${d} inch (16:9)`, d, 1920, 1080]),
-  ...[24, 27, 30].map((d) => ['Generic', `Monitor ${d} inch (16:10)`, d, 1920, 1200]),
-  ...[29, 34, 38].map((d) => ['Generic', `Ultrawide monitor ${d} inch (21:9)`, d, 3440, 1440]),
-  ['Generic', 'Super ultrawide monitor 49 inch (32:9)', 49, 5120, 1440],
-  ...[32, 40, 43, 50, 55, 65, 75, 85].map((d) => ['Generic', `TV ${d} inch`, d, 3840, 2160]),
-  ...[7, 8, 10.1, 11].map((d) => ['Generic', `Tablet ${d} inch (16:10)`, d, 1920, 1200]),
-  ...[5.5, 6, 6.5, 6.7].map((d) => ['Generic', `Phone ${d} inch (20:9)`, d, 2400, 1080]),
+  ['Apple', 'iPhone 17 Pro Max', 6.9, 2868, 1320, 'ios', A.compare], ['Apple', 'iPhone 17 Pro', 6.3, 2622, 1206, 'ios', A.compare],
+  ['Apple', 'iPhone Air', 6.5, 2736, 1260, 'ios', A.air], ['Apple', 'iPhone 17', 6.3, 2622, 1206, 'ios', A.i17],
+  ['Apple', 'iPhone 16e', 6.1, 2532, 1170, 'ios', A.compare],
+  ['Apple', 'iPhone 16 Pro Max', 6.9, 2868, 1320, 'ios', A.compare], ['Apple', 'iPhone 16 Pro', 6.3, 2622, 1206, 'ios', A.compare],
+  ['Apple', 'iPhone 16 Plus', 6.7, 2796, 1290, 'ios', A.i16], ['Apple', 'iPhone 16', 6.1, 2556, 1179, 'ios', A.i16],
+  ['Apple', 'iPhone 15 Pro Max', 6.7, 2796, 1290, 'ios', A.ident], ['Apple', 'iPhone 15 Pro', 6.1, 2556, 1179, 'ios', A.ident],
+  ['Apple', 'iPhone 15 Plus', 6.7, 2796, 1290, 'ios', A.ident], ['Apple', 'iPhone 15', 6.1, 2556, 1179, 'ios', A.i15],
+  ['Apple', 'iPhone 14 Pro Max', 6.7, 2796, 1290, 'ios', A.ident], ['Apple', 'iPhone 14 Pro', 6.1, 2556, 1179, 'ios', A.ident],
+  ['Apple', 'iPhone 14 Plus', 6.7, 2778, 1284, 'ios', A.ident], ['Apple', 'iPhone 14', 6.1, 2532, 1170, 'ios', A.ident],
+  ['Apple', 'iPhone 13 Pro Max', 6.7, 2778, 1284, 'ios', A.ident], ['Apple', 'iPhone 13 Pro', 6.1, 2532, 1170, 'ios', A.ident],
+  ['Apple', 'iPhone 13', 6.1, 2532, 1170, 'ios', A.ident], ['Apple', 'iPhone 13 mini', 5.4, 2340, 1080, 'ios', A.ident],
+  ['Apple', 'iPhone 12 Pro Max', 6.7, 2778, 1284, 'ios', A.ident], ['Apple', 'iPhone 12 Pro', 6.1, 2532, 1170, 'ios', A.ident],
+  ['Apple', 'iPhone 12', 6.1, 2532, 1170, 'ios', A.ident], ['Apple', 'iPhone 12 mini', 5.4, 2340, 1080, 'ios', A.ident],
+  ['Apple', 'iPhone 11', 6.1, 1792, 828, 'ios', A.ident], ['Apple', 'iPhone SE (3rd generation)', 4.7, 1334, 750, 'ios', A.ident],
+  ['Apple', 'iPad (10th generation and iPad A16)', 10.9, 2360, 1640, 'ios', A.ipad, 'ipad 11th'],
+  ['Apple', 'iPad (9th generation)', 10.2, 2160, 1620, 'ios', A.ipad],
+  ['Apple', 'iPad mini (6th generation and A17 Pro)', 8.3, 2266, 1488, 'ios', A.ipad, 'ipad mini 7'],
+  ['Apple', 'iPad Air 11 inch (M2, M3)', 10.9, 2360, 1640, 'ios', A.ipadAir], ['Apple', 'iPad Air 13 inch (M2, M3)', 12.9, 2732, 2048, 'ios', A.ipadAir],
+  ['Apple', 'iPad Pro 11 inch (M4, M5)', 11.1, 2420, 1668, 'ios', A.ipadPro], ['Apple', 'iPad Pro 13 inch (M4, M5)', 13, 2752, 2064, 'ios', A.ipadPro],
+  ['Apple', 'MacBook Air 13 inch (M2 to M5)', 13.6, 2560, 1664, 'mac', A.mba, 'm2 m3 m4 m5 13.6'],
+  ['Apple', 'MacBook Air 15 inch (M2 to M5)', 15.3, 2880, 1864, 'mac', A.mba, 'm2 m3 m4 m5'],
+  ['Apple', 'MacBook Pro 14 inch (M3 to M5)', 14.2, 3024, 1964, 'mac', A.mbp, 'm3 m4 m5 pro max'],
+  ['Apple', 'MacBook Pro 16 inch (M3 to M5)', 16.2, 3456, 2234, 'mac', A.mbp, 'm3 m4 m5 pro max'],
+  ['Apple', 'iMac 24 inch', 23.5, 4480, 2520, 'mac', A.imac, 'm1 m3 m4'],
+  ['Apple', 'Studio Display', 27, 5120, 2880, 'mac', A.studio], ['Apple', 'Pro Display XDR', 31.6, 6016, 3384, 'mac', A.xdr],
+  ['Samsung', 'Galaxy S25 Ultra', 6.9, 3120, 1440, 'android', S.s25u], ['Samsung', 'Galaxy S25 Edge', 6.7, 3120, 1440, 'android', S.s25e],
+  ['Samsung', 'Galaxy S25+', 6.7, 3120, 1440, 'android', S.s25, 'plus'], ['Samsung', 'Galaxy S25', 6.2, 2340, 1080, 'android', S.s25],
+  ['Samsung', 'Galaxy S24 Ultra', 6.8, 3120, 1440, 'android', S.s24u], ['Samsung', 'Galaxy S24+', 6.7, 3120, 1440, 'android', S.s24, 'plus'],
+  ['Samsung', 'Galaxy S24', 6.2, 2340, 1080, 'android', S.s24],
+  ['Google', 'Pixel 10 Pro XL', 6.8, 2992, 1344, 'android', G('pixel_10_pro_xl')], ['Google', 'Pixel 10 Pro', 6.3, 2856, 1280, 'android', G('pixel_10_pro')],
+  ['Google', 'Pixel 10', 6.3, 2424, 1080, 'android', G('pixel_10')], ['Google', 'Pixel 10a', 6.3, 2424, 1080, 'android', G('pixel_10a')],
+  ['Google', 'Pixel 9a', 6.3, 2424, 1080, 'android', G('pixel_9a')],
+  ['Google', 'Pixel 9 Pro XL', 6.8, 2992, 1344, 'android', G('pixel_9_pro_xl')], ['Google', 'Pixel 9 Pro', 6.3, 2856, 1280, 'android', G('pixel_9_pro')],
+  ['Google', 'Pixel 9', 6.3, 2424, 1080, 'android', G('pixel_9')],
+  ['Google', 'Pixel 8 Pro', 6.7, 2992, 1344, 'android', G('pixel_8_pro')], ['Google', 'Pixel 8', 6.2, 2400, 1080, 'android', G('pixel_8')],
+  ['Google', 'Pixel 8a', 6.1, 2400, 1080, 'android', G('pixel_8a')],
+  ['Google', 'Pixel 7 Pro', 6.7, 3120, 1440, 'android', G('pixel_7_pro')], ['Google', 'Pixel 7', 6.3, 2400, 1080, 'android', G('pixel_7')],
+  ['Google', 'Pixel 7a', 6.1, 2400, 1080, 'android', G('pixel_7a')], ['Google', 'Pixel 6', 6.4, 2400, 1080, 'android', G('pixel_6')],
+  ['Google', 'Pixel 6a', 6.1, 2400, 1080, 'android', G('pixel_6a')], ['Google', 'Pixel Tablet', 10.95, 2560, 1600, 'android', G('pixel_tablet')],
+  ['Microsoft', 'Surface Pro 13 inch (11th Edition)', 13, 2880, 1920, 'windows', MS.pro13, 'copilot snapdragon'],
+  ['Microsoft', 'Surface Pro 9', 13, 2880, 1920, 'windows', MS.pro9], ['Microsoft', 'Surface Pro 7', 12.3, 2736, 1824, 'windows', MS.pro7],
+  ['Valve', 'Steam Deck (LCD)', 7, 1280, 800, 'windows', DECK], ['Valve', 'Steam Deck OLED', 7.4, 1280, 800, 'windows', DECK],
+  ['Dell', 'XPS 13 Plus (OLED 3456 x 2160)', 13.37, 3456, 2160, 'windows', XPS, '9320'],
 ];
 
+/** Which platform the visitor is on, so the Device tab can open with their kind of device. */
+export function platformOf({ userAgent = '', platform = '', maxTouchPoints = 0 } = {}) {
+  const ua = `${userAgent} ${platform}`;
+  if (/iPhone|iPad|iPod/i.test(ua) || (/Mac/i.test(platform) && maxTouchPoints > 1)) return 'ios';
+  if (/Android/i.test(ua)) return 'android';
+  if (/Mac/i.test(ua)) return 'mac';
+  return 'windows'; // Windows, Linux and ChromeOS: the list offers PC-style devices
+}
+
 let cache;
-/** Every device with an id, aspect ratio (long / short) and a source note. */
+/** Every device with an id, aspect ratio (long / short), pixel size, platform and a spec URL. */
 export function deviceList() {
   if (cache) return cache;
-  cache = RAW.map(([brand, name, diag, w, h], n) => ({
-    id: `${brand.toLowerCase()}-${n}`, brand, name: brand === 'Generic' ? name : name, diag,
-    aspect: Math.max(w, h) / Math.min(w, h), source: SRC[brand],
+  cache = RAW.map(([brand, name, diag, w, h, platform, source, words = ''], n) => ({
+    id: `${brand.toLowerCase()}-${n}`, brand, name, diag, w, h, platform, words,
+    aspect: Math.max(w, h) / Math.min(w, h), source,
   }));
   return cache;
+}
+
+/** The first screen of the Device tab: newest devices of the visitor's platform. */
+export function popularDevices(platform, count = 12) {
+  const all = deviceList();
+  const mine = all.filter((d) => d.platform === platform);
+  return (mine.length ? mine : all).slice(0, count);
 }
 
 export const panelFor = (device) => panelFromDiagonal(device.diag, device.aspect);
@@ -111,7 +142,7 @@ export function searchDevices(query) {
   const words = query.toLowerCase().split(/[^a-z0-9.+]+/).filter(Boolean);
   if (words.length === 0) return [];
   return deviceList().filter((d) => {
-    const hay = `${d.brand} ${d.name}`.toLowerCase();
+    const hay = `${d.brand} ${d.name} ${d.words}`.toLowerCase();
     return words.every((w) => hay.includes(w));
   });
 }
