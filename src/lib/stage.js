@@ -5,6 +5,7 @@ import {
   CARD, devPxPerMmFromObject, devPxPerMmFromPanel, panelFromDiagonal, estimateCssPxPerMm, screenSignature,
   loadStore, saveStore, pickProfile, pickCheckObject, withProfile, withBorrowed, withoutProfile, statusFor,
 } from './calibration.js';
+import { isRemoveTarget, pickGuidePx } from './guides.js';
 import { COINS, PAPER, deviceList, searchDevices, panelFor, popularDevices, platformOf } from './reference.js';
 
 const PREFS_KEY = 'bm.ruler.prefs.v1';
@@ -87,7 +88,7 @@ export function initStage() {
   const phoneQuery = matchMedia('(max-width: 599px)');
   const isPhone = () => phoneQuery.matches;
   const thick = () => (S.unit === 'both' ? (isPhone() ? 72 : 80) : isPhone() ? 46 : 52);
-  const tickMax = () => (S.unit === 'both' ? (isPhone() ? 22 : 24) : isPhone() ? 26 : 28);
+  const tickMax = () => (S.unit === 'both' ? (isPhone() ? 18 : 24) : isPhone() ? 26 : 28);
   function layout() {
     const t = thick();
     for (const [e, v] of [['top', '--rt'], ['right', '--rr'], ['bottom', '--rb'], ['left', '--rl']]) {
@@ -156,6 +157,7 @@ export function initStage() {
         const plan = tickPlan(unit, css);
         const ticks = ticksFor(plan, lengthMm, dev);
         const fromInner = units.length === 2 && u === 1;
+        const stacked = !horizontal && units.length === 2 && isPhone();
         const labelD = units.length === 2
           ? (fromInner ? T - TM - Math.round(9 * dpr) : TM + Math.round(9 * dpr))
           : TM + Math.round(12 * dpr);
@@ -176,9 +178,21 @@ export function initStage() {
               ctx.textAlign = lead ? 'left' : 'center';
               ctx.fillText(text, lead ? a + 3 * dpr : px, py);
             } else {
-              ctx.textAlign = 'center';
               const y = rel < fs ? a + fs * 0.7 : py;
-              if (t.i === 0) { ctx.textAlign = 'center'; ctx.fillText(text, px, a + fs * 0.9); } else ctx.fillText(text, px, y);
+              const y0 = t.i === 0 ? a + fs * 0.9 : y;
+              if (stacked) {
+                // Phone, two units on one side: cm sits right-aligned and inch left-aligned either side of the middle,
+                // and fraction labels are dropped, so no two labels touch.
+                if (unit === 'in' && t.i !== 0 && /\D/.test(text)) continue;
+                const outerSide = !fromInner; // cm label sits on the outer half, toward the screen edge
+                const d = outerSide ? T / 2 - 4 * dpr : T / 2 + 4 * dpr;
+                const [lx] = point(edge, a, d);
+                ctx.textAlign = (outerSide ? 'right' : 'left') === 'right' ? (edge === 'left' ? 'right' : 'left') : (edge === 'left' ? 'left' : 'right');
+                ctx.fillText(text, lx, y0);
+              } else {
+                ctx.textAlign = 'center';
+                ctx.fillText(text, px, y0);
+              }
             }
           }
         }
@@ -209,17 +223,18 @@ export function initStage() {
     const el = document.createElement('div');
     el.className = `guide g${g.axis}`;
     el.tabIndex = 0;
+    el.style.setProperty('--ls', String(g.id % 4)); // stagger labels so neighbours do not overlap
     el.setAttribute('role', 'slider');
     el.setAttribute('aria-orientation', g.axis === 'x' ? 'horizontal' : 'vertical');
     el.setAttribute('aria-label', `${g.axis === 'x' ? 'Vertical' : 'Horizontal'} guide ${g.id}`);
-    el.innerHTML = '<span class="gl"><span class="gt"></span><button type="button" class="gx" aria-label="Remove guide" tabindex="-1">×</button></span>';
+    el.innerHTML = '<span class="gl"><span class="gt"></span><button type="button" class="gdel" data-remove aria-label="Remove guide" tabindex="-1">×</button></span>';
     el.addEventListener('pointerdown', (e) => {
-      if (e.target.closest('.gx')) return;
+      if (isRemoveTarget(e.target)) return;
       e.preventDefault();
       startDrag(g, e);
     });
     el.addEventListener('dblclick', () => removeGuide(g));
-    el.querySelector('.gx').addEventListener('click', (e) => { e.stopPropagation(); removeGuide(g); });
+    el.querySelector('[data-remove]').addEventListener('click', (e) => { e.stopPropagation(); removeGuide(g); });
     el.addEventListener('keydown', (e) => {
       const dir = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
       if (dir) {
@@ -239,6 +254,26 @@ export function initStage() {
   function extentMm(axis) {
     const { ox, oy } = origin();
     return (axis === 'x' ? stage.clientWidth - ox : stage.clientHeight - oy) / cssPerMm();
+  }
+  /** Spot for a button-made guide: in the visible area, clear of the title and controls, stepped from the last one. */
+  function freeSpotMm(axis) {
+    const r = stage.getBoundingClientRect();
+    const { ox, oy } = origin();
+    const t = thick();
+    const vis = axis === 'x' ? r.width - ox - (S.edges.right ? t : 0) : r.height - oy - (S.edges.bottom ? t : 0);
+    let from = 0;
+    if (axis === 'x') {
+      for (const el of stage.querySelectorAll('.head h1, .head .lede, .head .hint, .callout:not([hidden])')) {
+        const b = el.getBoundingClientRect();
+        if (b.width && b.height && getComputedStyle(el).display !== 'none') from = Math.max(from, b.right - r.left - ox + 40);
+      }
+    } else {
+      const bar = stage.querySelector('.bar');
+      if (bar) from = bar.getBoundingClientRect().bottom - r.top - oy + 40;
+    }
+    const existing = S.guides.filter((g) => g.axis === axis).map((g) => g.mm * cssPerMm());
+    const px = pickGuidePx({ visible: vis, freeFrom: from, existing });
+    return Math.max(px / cssPerMm(), 1);
   }
   function addGuide(axis, mm, silent) {
     if (S.guides.length >= MAX_GUIDES) { say('You can have up to 8 guides. Remove one first.'); return null; }
@@ -316,8 +351,8 @@ export function initStage() {
   function spanFor(axis) {
     const list = S.guides.filter((g) => g.axis === axis).sort((a, b) => b.touched - a.touched);
     if (list.length === 0) return null;
-    if (list.length === 1) return { mm: list[0].mm, note: 'from the edge' };
-    return { mm: Math.abs(list[0].mm - list[1].mm), note: 'between the last two guides' };
+    const r = list.length === 1 ? { mm: list[0].mm, note: 'from the edge' } : { mm: Math.abs(list[0].mm - list[1].mm), note: 'between the last two guides' };
+    return r.mm >= 0.05 ? r : null; // never show a zero length
   }
   function readoutLines() {
     const x = spanFor('x'), y = spanFor('y');
@@ -400,7 +435,6 @@ export function initStage() {
     $('chip-text').textContent = st.text;
     $('callout').hidden = !!S.profile || S.calDismissed || calOpen;
     $('opt-reset').hidden = !S.profile && !S.borrowed;
-    $('badge').hidden = !(S.profile && S.profile.verified && !S.borrowed);
   }
   function rerender() { layout(); paintControls(); draw(); renderReadout(); }
 
@@ -415,10 +449,11 @@ export function initStage() {
   $('opt-paper').addEventListener('change', (e) => { S.paper = e.target.value; savePrefs(); draw(); });
   $('btn-guide').addEventListener('click', () => {
     const vertical = (S.edges.left || S.edges.right) && !(S.edges.top || S.edges.bottom);
-    addGuide(vertical ? 'y' : 'x', extentMm(vertical ? 'y' : 'x') / 2);
+    const axis = vertical ? 'y' : 'x';
+    addGuide(axis, freeSpotMm(axis));
   });
-  $('opt-add-x').addEventListener('click', () => addGuide('x', extentMm('x') / 2));
-  $('opt-add-y').addEventListener('click', () => addGuide('y', extentMm('y') / 2));
+  $('opt-add-x').addEventListener('click', () => addGuide('x', freeSpotMm('x')));
+  $('opt-add-y').addEventListener('click', () => addGuide('y', freeSpotMm('y')));
   $('opt-clear').addEventListener('click', clearGuides);
   $('opt-reset').addEventListener('click', () => {
     S.store = withoutProfile(S.store, S.sig);
@@ -719,7 +754,7 @@ export function initStage() {
       b.className = 'dev';
       b.innerHTML = '<span class="dn"></span><span class="dd"></span>';
       b.querySelector('.dn').textContent = d.name;
-      b.querySelector('.dd').textContent = `${d.brand}, ${d.diag} in`;
+      b.querySelector('.dd').textContent = d.computed ? `${d.diag} in, computed from size and resolution` : `${d.brand}, ${d.diag} in`;
       b.addEventListener('click', () => {
         const panel = panelFor(d);
         const dev = devPxPerMmFromPanel(panel.longMm, Math.max(window.screen.width, window.screen.height), dprNow());

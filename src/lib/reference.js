@@ -59,6 +59,8 @@ const MS = {
   pro7: 'https://support.microsoft.com/en-us/surface/models/surface-pro-7-specs-and-features',
 };
 const DECK = 'https://www.steamdeck.com/en/tech';
+/** Marks a row computed from size and resolution. It has no manufacturer page. */
+export const SIZE = 'by-size';
 const XPS = 'https://www.dell.com/support/manuals/en-ai/xps-13-9320-laptop/xps-13-9320-setup-and-specifications/display';
 
 // [brand, name, diagonal inches, native width px, native height px, platform, source URL, extra search words]
@@ -106,6 +108,34 @@ const RAW = [
   ['Microsoft', 'Surface Pro 9', 13, 2880, 1920, 'windows', MS.pro9], ['Microsoft', 'Surface Pro 7', 12.3, 2736, 1824, 'windows', MS.pro7],
   ['Valve', 'Steam Deck (LCD)', 7, 1280, 800, 'windows', DECK], ['Valve', 'Steam Deck OLED', 7.4, 1280, 800, 'windows', DECK],
   ['Dell', 'XPS 13 Plus (OLED 3456 x 2160)', 13.37, 3456, 2160, 'windows', XPS, '9320'],
+  // By size: no model, no manufacturer page. The panel is computed from the diagonal and the resolution, and the list says so.
+  ['Monitor', '21.5 inch monitor, 1920 x 1080 (Full HD)', 21.5, 1920, 1080, 'windows', SIZE, 'monitor screen display '],
+  ['Monitor', '23.8 inch monitor, 1920 x 1080 (Full HD)', 23.8, 1920, 1080, 'windows', SIZE, 'monitor screen display 24'],
+  ['Monitor', '23.8 inch monitor, 2560 x 1440 (QHD)', 23.8, 2560, 1440, 'windows', SIZE, 'monitor screen display 24'],
+  ['Monitor', '24 inch monitor, 1920 x 1080 (Full HD)', 24, 1920, 1080, 'windows', SIZE, 'monitor screen display '],
+  ['Monitor', '24 inch monitor, 1920 x 1200 (WUXGA)', 24, 1920, 1200, 'windows', SIZE, 'monitor screen display wuxga 16:10'],
+  ['Monitor', '24.5 inch monitor, 1920 x 1080 (Full HD)', 24.5, 1920, 1080, 'windows', SIZE, 'monitor screen display 25'],
+  ['Monitor', '27 inch monitor, 1920 x 1080 (Full HD)', 27, 1920, 1080, 'windows', SIZE, 'monitor screen display '],
+  ['Monitor', '27 inch monitor, 2560 x 1440 (QHD)', 27, 2560, 1440, 'windows', SIZE, 'monitor screen display qhd 1440p'],
+  ['Monitor', '27 inch monitor, 3840 x 2160 (4K)', 27, 3840, 2160, 'windows', SIZE, 'monitor screen display 4k uhd'],
+  ['Monitor', '31.5 inch monitor, 2560 x 1440 (QHD)', 31.5, 2560, 1440, 'windows', SIZE, 'monitor screen display 32 qhd 1440p'],
+  ['Monitor', '31.5 inch monitor, 3840 x 2160 (4K)', 31.5, 3840, 2160, 'windows', SIZE, 'monitor screen display 32 4k uhd'],
+  ['Monitor', '32 inch monitor, 3840 x 2160 (4K)', 32, 3840, 2160, 'windows', SIZE, 'monitor screen display 4k uhd'],
+  ['Monitor', '34 inch monitor, 3440 x 1440 (UWQHD)', 34, 3440, 1440, 'windows', SIZE, 'monitor screen display ultrawide uwqhd curved'],
+  ['Monitor', '49 inch monitor, 5120 x 1440 (DQHD)', 49, 5120, 1440, 'windows', SIZE, 'monitor screen display super ultrawide dqhd'],
+  ['TV', '32 inch TV, 1366 x 768 (HD)', 32, 1366, 768, 'windows', SIZE, 'TV screen display hd 720p'],
+  ['TV', '32 inch TV, 1920 x 1080 (Full HD)', 32, 1920, 1080, 'windows', SIZE, 'TV screen display full hd 1080p'],
+  ['TV', '40 inch TV, 1920 x 1080 (Full HD)', 40, 1920, 1080, 'windows', SIZE, 'TV screen display full hd 1080p'],
+  ['TV', '43 inch TV, 1920 x 1080 (Full HD)', 43, 1920, 1080, 'windows', SIZE, 'TV screen display full hd 1080p'],
+  ['TV', '43 inch TV, 3840 x 2160 (4K)', 43, 3840, 2160, 'windows', SIZE, 'TV screen display 4k uhd'],
+  ['TV', '50 inch TV, 3840 x 2160 (4K)', 50, 3840, 2160, 'windows', SIZE, 'TV screen display 4k uhd'],
+  ['TV', '55 inch TV, 3840 x 2160 (4K)', 55, 3840, 2160, 'windows', SIZE, 'TV screen display 4k uhd'],
+  ['TV', '58 inch TV, 3840 x 2160 (4K)', 58, 3840, 2160, 'windows', SIZE, 'TV screen display 4k uhd'],
+  ['TV', '65 inch TV, 3840 x 2160 (4K)', 65, 3840, 2160, 'windows', SIZE, 'TV screen display 4k uhd'],
+  ['TV', '75 inch TV, 3840 x 2160 (4K)', 75, 3840, 2160, 'windows', SIZE, 'TV screen display 4k uhd'],
+  ['TV', '85 inch TV, 3840 x 2160 (4K)', 85, 3840, 2160, 'windows', SIZE, 'TV screen display 4k uhd'],
+  ['TV', '55 inch TV, 7680 x 4320 (8K)', 55, 7680, 4320, 'windows', SIZE, 'TV screen display 8k'],
+  ['TV', '65 inch TV, 7680 x 4320 (8K)', 65, 7680, 4320, 'windows', SIZE, 'TV screen display 8k'],
 ];
 
 /** Which platform the visitor is on, so the Device tab can open with their kind of device. */
@@ -123,7 +153,7 @@ export function deviceList() {
   if (cache) return cache;
   cache = RAW.map(([brand, name, diag, w, h, platform, source, words = ''], n) => ({
     id: `${brand.toLowerCase()}-${n}`, brand, name, diag, w, h, platform, words,
-    aspect: Math.max(w, h) / Math.min(w, h), source,
+    aspect: Math.max(w, h) / Math.min(w, h), computed: source === SIZE, source: source === SIZE ? null : source,
   }));
   return cache;
 }

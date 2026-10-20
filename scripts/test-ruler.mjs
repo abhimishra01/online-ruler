@@ -6,6 +6,7 @@ import {
   CARD, cssPxPerMm, devPxPerMmFromObject, panelFromDiagonal, devPxPerMmFromPanel, estimateCssPxPerMm, screenSignature,
   emptyStore, parseStore, pickProfile, pickCheckObject, withProfile, withBorrowed, withoutProfile, loadStore, saveStore, statusFor, STORE_KEY,
 } from '../src/lib/calibration.js';
+import { isRemoveTarget, pickGuidePx } from '../src/lib/guides.js';
 import { COINS, PAPER, deviceList, searchDevices, panelFor, popularDevices, platformOf, SOURCE_HOSTS } from '../src/lib/reference.js';
 
 let checks = 0;
@@ -184,20 +185,23 @@ eq(COINS.find((c) => c.id === 'us-cent').mm, 19.05);
 eq(new Set(COINS.map((c) => c.id)).size, COINS.length, 'coin ids are unique');
 {
   const list = deviceList();
-  eq(list.length > 60, true, 'device list has entries');
+  eq(list.length > 90, true, 'device list has entries');
   eq(new Set(list.map((d) => d.id)).size, list.length, 'device ids are unique');
   eq(new Set(list.map((d) => d.name)).size, list.length, 'device names are unique');
   eq(list.every((d) => d.diag > 3 && d.diag < 100 && d.aspect >= 1 && d.aspect < 4), true, 'sane diagonals and aspects');
   eq(list.some((d) => d.brand === 'Generic'), false, 'no generic rows: the Size tab covers them');
   // Every row names a manufacturer page and its density is plausible.
   for (const d of list) {
-    const u = new URL(d.source);
-    eq(u.protocol === 'https:' && SOURCE_HOSTS.includes(u.hostname), true, `${d.name}: source must be an https manufacturer page`);
+    if (d.computed) eq(d.source, null, `${d.name}: a by-size row has no page`);
+    else {
+      const u = new URL(d.source);
+      eq(u.protocol === 'https:' && SOURCE_HOSTS.includes(u.hostname), true, `${d.name}: source must be an https manufacturer page`);
+    }
     const ppi = Math.hypot(d.w, d.h) / d.diag;
-    eq(ppi >= 80 && ppi <= 700, true, `${d.name}: ${Math.round(ppi)} ppi is not plausible`);
+    eq(ppi >= 40 && ppi <= 700, true, `${d.name}: ${Math.round(ppi)} ppi is not plausible`);
   }
   // Current models must be findable by the names people type.
-  for (const q of ['iphone 17', 'iphone air', 'pixel 10', 'galaxy s25', 'macbook air m4', 'ipad pro m5', 'steam deck oled', 'xps 13 plus', 'surface pro']) {
+  for (const q of ['iphone 17', 'iphone air', 'pixel 10', 'galaxy s25', 'macbook air m4', 'ipad pro m5', 'steam deck oled', 'xps 13 plus', 'surface pro', '27 inch monitor', '24 inch monitor', '21.5 inch monitor', '32 inch monitor', '34 inch monitor', '55 inch tv', '65 inch tv', '75 inch tv']) {
     eq(searchDevices(q).length > 0, true, `search finds "${q}"`);
   }
   near(list.find((d) => d.name === 'Steam Deck OLED').diag, 7.4, 0, 'Steam Deck OLED is 7.4 in');
@@ -220,3 +224,24 @@ eq(new Set(COINS.map((c) => c.id)).size, COINS.length, 'coin ids are unique');
 }
 
 console.log(`ok: ${checks} checks passed`);
+
+// ---- guides
+{
+  // A press on a vertical guide (class gx) must start a drag; only the remove button removes.
+  const mk = (cls, inBtn) => ({ closest: (sel) => (sel === 'button[data-remove]' && inBtn ? {} : null), className: cls });
+  eq(isRemoveTarget(mk('guide gx', false)), false, 'vertical guide body is not the remove button');
+  eq(isRemoveTarget(mk('guide gy', false)), false, 'horizontal guide body is not the remove button');
+  eq(isRemoveTarget(mk('gdel', true)), true, 'remove button is');
+  eq(isRemoveTarget(null), false);
+  // New guides land in view, step apart, and never at zero.
+  const seen = [];
+  for (let i = 0; i < 8; i++) {
+    const px = pickGuidePx({ visible: 900, freeFrom: 480, existing: seen });
+    eq(px >= 30 && px <= 870, true, `guide ${i} in view: ${px}`);
+    eq(seen.every((e) => Math.abs(e - px) >= 12), true, `guide ${i} clear of the others`);
+    seen.push(px);
+  }
+  eq(pickGuidePx({ visible: 900, freeFrom: 480 }) >= 480, true, 'first guide starts clear of the text');
+  eq(pickGuidePx({ visible: 300, freeFrom: 900 }) > 0, true, 'narrow stage still gets a guide');
+  eq(pickGuidePx({ visible: 0, freeFrom: 0 }) > 0, true, 'zero-size stage never gives 0');
+}

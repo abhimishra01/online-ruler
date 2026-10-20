@@ -37,11 +37,8 @@
 @media (hover: hover) and (pointer: fine) { .hint-full { display: block; } }
 .hint-rotate { display: none; }
 @media (max-width: 599px) and (orientation: portrait) { .hint-rotate { display: block; } }
-.badge { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 10px; background: #15803d; color: #fff; font-size: 0.9375rem; font-weight: 700; }
-.badge[hidden] { display: none; }
-:root[data-theme="dark"] .badge { background: #4ade80; color: #052e16; }
-.stage[data-phone="1"] .head h1 { font-size: 1rem; }
-.stage[data-phone="1"] .head .lede { display: none; }
+/* Phone rules are a media query, not a script flag, so the first paint is already final. */
+@media (max-width: 599px) { .stage .head h1 { font-size: 1rem; } .stage .head .lede { display: none; } }
 
 .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .btn, .seg button, .chip {
@@ -98,10 +95,10 @@
 .guide:focus-visible { outline: none; }
 .guide:focus-visible::before { box-shadow: 0 0 0 3px var(--card), 0 0 0 6px var(--brand-ink); }
 .gl { position: absolute; display: inline-flex; align-items: center; gap: 2px; background: var(--brand); color: #fff; font-size: 0.75rem; font-weight: 700; border-radius: 8px; padding: 0 0 0 8px; white-space: nowrap; font-variant-numeric: tabular-nums; z-index: 1; }
-.guide.gx .gl { top: 46%; left: 24px; }
-.guide.gy .gl { left: 58%; top: 24px; }
-.gl .gx { all: unset; box-sizing: border-box; width: 28px; height: 28px; display: grid; place-items: center; cursor: pointer; font-size: 1rem; }
-.gl .gx:hover { background: rgb(0 0 0 / .2); border-radius: 6px; }
+.guide.gx .gl { top: calc(30% + var(--ls, 0) * 40px); left: 24px; }
+.guide.gy .gl { left: calc(40% + var(--ls, 0) * 110px); top: 24px; }
+.gl .gdel { all: unset; box-sizing: border-box; width: 28px; height: 28px; display: grid; place-items: center; cursor: pointer; font-size: 1rem; }
+.gl .gdel:hover { background: rgb(0 0 0 / .2); border-radius: 6px; }
 .guide.is-drag::before { width: 3px; }
 
 #cross { position: absolute; inset: 0; z-index: 2; pointer-events: none; }

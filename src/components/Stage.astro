@@ -28,7 +28,6 @@ const units = [['cm', 'cm'], ['mm', 'mm'], ['in', 'in'], ['px', 'px'], ['both', 
       <button type="button" id="chip" class="chip" data-kind="estimate" aria-haspopup="dialog">
         <span class="dot" aria-hidden="true"></span><span id="chip-text">Not calibrated: sizes are an estimate</span><span class="sr-only">. Opens calibration.</span>
       </button>
-      <p id="badge" class="badge" hidden><span aria-hidden="true">&#10003;</span> Calibrated, checked</p>
       <div id="seg" class="seg" role="radiogroup" aria-label="Unit">
         {units.map(([v, l]) => <button type="button" role="radio" data-unit={v} aria-checked={v === unit ? 'true' : 'false'}>{l}</button>)}
       </div>
@@ -142,7 +141,7 @@ const units = [['cm', 'cm'], ['mm', 'mm'], ['in', 'in'], ['px', 'px'], ['both', 
 
       <div role="tabpanel" id="pane-device" aria-labelledby="tab-device" hidden>
         <label class="sel">Search your device
-          <input type="search" id="dev-q" placeholder="iPhone 15, MacBook Air 13, monitor 27" autocomplete="off" />
+          <input type="search" id="dev-q" placeholder="iPhone 15, MacBook Air 13, 27 inch monitor, 55 inch TV" autocomplete="off" />
         </label>
         <p id="dev-count" class="small"></p>
         <ul id="dev-list" class="devs"></ul>
