@@ -7,7 +7,7 @@ interface Props { kind: 'methods' | 'fractions' | 'mm-in' | 'cm-in' | 'objects';
 const { kind } = Astro.props;
 const fractionRows = Array.from({ length: 16 }, (_, k) => {
   const mm = ((k + 1) * MM_PER_IN) / 16;
-  return { frac: toFraction(mm).text, dec: fmt((k + 1) / 16, 4), mm: fmt(mm, 2) };
+  return { frac: toFraction(mm).text, dec: fmt((k + 1) / 16, 4), mm: fmt(mm + 1e-9, 2) }; // the nudge makes exact halves such as 3.175 round up, not down by float error
 });
 const mmRows = [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50, 100].map((mm) => ({ a: `${mm} mm`, dec: fmt(mm / MM_PER_IN, 3), frac: toFraction(mm).text }));
 const cmRows = [1, 2, 3, 4, 5, 10, 15, 20, 25, 30].map((cm) => ({ a: `${cm} cm`, dec: fmt((cm * 10) / MM_PER_IN, 2), frac: toFraction(cm * 10).text }));

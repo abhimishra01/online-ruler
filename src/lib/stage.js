@@ -492,9 +492,9 @@ export function initStage() {
 
   document.addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === 'Escape' && calOpen) { closeCal(); return; } // closes from a text box or a menu too
     const tag = (e.target && e.target.tagName) || '';
     if (/INPUT|SELECT|TEXTAREA/.test(tag) || e.target.isContentEditable) return;
-    if (e.key === 'Escape' && calOpen) { closeCal(); return; }
     if (e.key === 'f' || e.key === 'F') { if (fsOk) { e.preventDefault(); toggleFull(); } }
     else if (e.key === 'c' || e.key === 'C') { S.cross = !S.cross; $('opt-cross').checked = S.cross; savePrefs(); cross.hidden = true; say(S.cross ? 'Crosshair on' : 'Crosshair off'); }
   });
@@ -577,6 +577,8 @@ export function initStage() {
   function showObject(spec, startCssW) {
     objEl.hidden = false;
     objEl.dataset.kind = spec.kind;
+    objEl.dataset.check = ''; // a Check step that was closed half way must not leave the grip hidden
+    handle.hidden = false;
     cal.spec = spec;
     cal.cssW = startCssW;
     // Put it near the middle of the free area.
