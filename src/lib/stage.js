@@ -46,7 +46,6 @@ export function initStage() {
     estDev: 0,
     otherScreen: false,
     borrowed: false,
-    calDismissed: false,
   };
   for (const e of (stage.dataset.edges || 'top,left').split(',')) if (e in S.edges) S.edges[e] = true;
   try {
@@ -263,7 +262,7 @@ export function initStage() {
     const vis = axis === 'x' ? r.width - ox - (S.edges.right ? t : 0) : r.height - oy - (S.edges.bottom ? t : 0);
     let from = 0;
     if (axis === 'x') {
-      for (const el of stage.querySelectorAll('.head h1, .head .lede, .head .hint, .callout:not([hidden])')) {
+      for (const el of stage.querySelectorAll('.head h1, .head .lede, .head .hint')) {
         const b = el.getBoundingClientRect();
         if (b.width && b.height && getComputedStyle(el).display !== 'none') from = Math.max(from, b.right - r.left - ox + 40);
       }
@@ -430,10 +429,11 @@ export function initStage() {
   }
   function paintStatus() {
     const st = statusFor(S.profile, S.borrowed);
-    const chip = $('chip');
-    chip.dataset.kind = st.kind;
-    $('chip-text').textContent = st.text;
-    $('callout').hidden = !!S.profile || S.calDismissed || calOpen;
+    for (const chip of document.querySelectorAll('[data-cal-chip]')) {
+      chip.dataset.kind = st.kind;
+      chip.title = st.text;
+      chip.querySelector('[data-cal-chip-text]').textContent = st.short;
+    }
     $('opt-reset').hidden = !S.profile && !S.borrowed;
   }
   function rerender() { layout(); paintControls(); draw(); renderReadout(); }
@@ -468,9 +468,7 @@ export function initStage() {
     more.hidden = !open;
     moreBtn.setAttribute('aria-expanded', String(open));
   });
-  $('callout-go').addEventListener('click', () => openCal());
-  $('callout-x').addEventListener('click', () => { S.calDismissed = true; paintStatus(); });
-  $('chip').addEventListener('click', () => openCal());
+  for (const b of document.querySelectorAll('[data-cal-open]')) b.addEventListener('click', () => openCal());
 
   // ---------- full screen, wake lock, keys
   const fsBtn = $('btn-full');
@@ -682,7 +680,6 @@ export function initStage() {
   function openCal(tab) {
     calOpen = true;
     calEl.hidden = false;
-    $('callout').hidden = true;
     $('cal-pick').hidden = false;
     $('cal-verify').hidden = true;
     $('cal-done').hidden = true;
@@ -699,7 +696,7 @@ export function initStage() {
     objEl.hidden = true;
     stage.classList.remove('is-cal');
     paintStatus();
-    $('chip').focus({ preventScroll: true });
+    for (const b of document.querySelectorAll('[data-cal-open]')) { if (b.offsetParent) { b.focus({ preventScroll: true }); break; } }
   }
   $('cal-close').addEventListener('click', closeCal);
   for (const t of tabs) {

@@ -2,6 +2,8 @@
 import site from '../site.config.ts';
 import ThemeToggle from './ThemeToggle.astro';
 import { url, stripBase } from '../lib/url.ts';
+interface Props { calibrate?: boolean; }
+const { calibrate = false } = Astro.props;
 const path = stripBase(Astro.url.pathname);
 const links = [
   { href: '/', label: 'Ruler' },
@@ -31,6 +33,12 @@ const rulers = [{ href: '/cm/', label: 'Ruler in cm' }, { href: '/inches/', labe
           ))}
         </nav>
       </details>
+      {calibrate && (
+        <div class="hcal">
+          <span class="chip chip-static" data-cal-chip data-kind="estimate"><span class="dot" aria-hidden="true"></span><span data-cal-chip-text>Estimate</span></span>
+          <button type="button" class="btn" data-cal-open aria-haspopup="dialog">Calibrate</button>
+        </div>
+      )}
       <ThemeToggle />
     </div>
   </div>

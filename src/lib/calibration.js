@@ -116,10 +116,10 @@ export function pickCheckObject(usedId) {
 
 /** Plain words for the status chip. "Calibrated" is only for a method where the user matched a real object. */
 export function statusFor(profile, borrowed = false) {
-  if (profile && borrowed) return { kind: 'device', text: 'Using the calibration from another screen: approximate' };
-  if (!profile) return { kind: 'estimate', text: 'Not calibrated: sizes are an estimate' };
-  if (profile.method === 'device') return { kind: 'device', text: 'Set from device size: approximate' };
-  if (profile.method === 'diagonal') return { kind: 'device', text: 'Set from screen size: approximate' };
+  if (profile && borrowed) return { kind: 'device', text: 'Using the calibration from another screen: approximate', short: 'Approximate' };
+  if (!profile) return { kind: 'estimate', text: 'Not calibrated: sizes are an estimate', short: 'Estimate' };
+  if (profile.method === 'device') return { kind: 'device', text: 'Set from device size: approximate', short: 'Approximate' };
+  if (profile.method === 'diagonal') return { kind: 'device', text: 'Set from screen size: approximate', short: 'Approximate' };
   const what = { card: 'card', coin: 'coin', paper: 'paper' }[profile.method] || 'object';
-  return { kind: 'calibrated', text: profile.verified ? `Calibrated with ${what}, checked` : `Calibrated with ${what}` };
+  return { kind: 'calibrated', text: profile.verified ? `Calibrated with ${what}, checked` : `Calibrated with ${what}`, short: profile.verified ? 'Calibrated, checked' : 'Calibrated' };
 }

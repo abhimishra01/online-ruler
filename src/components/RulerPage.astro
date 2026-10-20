@@ -34,7 +34,7 @@ if (page.slug) {
 }
 const others = pages.filter((p) => p.slug !== page.slug);
 ---
-<Base fullTitle={page.title} description={page.description} jsonLd={jsonLd}>
+<Base fullTitle={page.title} description={page.description} jsonLd={jsonLd} calibrate>
   <Stage h1={page.h1} lede={page.lede} unit={page.unit} edges={page.edges} openCal={page.openCal} />
   <AdSlot />
   <nav aria-label="Ruler pages" class="mx-auto max-w-5xl px-4 pt-8">

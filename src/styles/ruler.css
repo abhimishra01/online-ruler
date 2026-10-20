@@ -53,7 +53,7 @@
 .seg button:first-child { border-radius: 10px 0 0 10px; margin-left: 0; }
 .seg button:last-child { border-radius: 0 10px 10px 0; }
 .seg button[aria-checked="true"] { background: var(--brand); border-color: var(--brand); color: #fff; position: relative; z-index: 1; }
-.chip { display: inline-flex; align-items: center; gap: 8px; text-align: left; line-height: 1.2; padding: 6px 12px; }
+.chip { display: inline-flex; white-space: nowrap; align-items: center; gap: 8px; text-align: left; line-height: 1.2; padding: 6px 12px; }
 .chip .dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: #b45309; }
 .chip[data-kind="calibrated"] .dot { background: #15803d; }
 .chip[data-kind="device"] .dot { background: var(--brand); }
@@ -76,11 +76,9 @@
 :root[data-theme="dark"] .err { color: #fca5a5; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 
-.notice, .callout { background: var(--card); border: 1px solid var(--edge); border-radius: 12px; padding: 12px 14px; max-width: 520px; font-size: 0.9375rem; box-shadow: 0 1px 2px rgb(16 24 40 / .05), 0 8px 24px -12px rgb(16 24 40 / .12); }
-.callout { margin-top: auto; }
-.callout[hidden], .notice[hidden], .more[hidden], .readout[hidden] { display: none; }
+.notice { background: var(--card); border: 1px solid var(--edge); border-radius: 12px; padding: 12px 14px; max-width: 520px; font-size: 0.9375rem; box-shadow: 0 1px 2px rgb(16 24 40 / .05), 0 8px 24px -12px rgb(16 24 40 / .12); }
+.notice[hidden], .more[hidden], .readout[hidden] { display: none; }
 .readout { margin-top: auto; align-self: flex-start; display: flex; flex-direction: column; gap: 6px; background: var(--card); border: 1px solid var(--edge); border-radius: 12px; padding: 8px 8px 8px 14px; max-width: 100%; }
-.callout:not([hidden]) ~ .readout { margin-top: 0; }
 .ro-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
 .ro-k { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); min-width: 64px; }
 .ro-v { font-size: 1.0625rem; font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -159,4 +157,24 @@
 @media (max-width: 700px) {
   .cal .steps { font-size: 0.875rem; }
   .cal .small { font-size: 0.8125rem; }
+}
+
+/* Calibration entry: header on wide screens, a small row inside the ruler on phones. Same markup both times, switched by CSS only. */
+.chip-static { cursor: default; min-height: 36px; padding: 4px 12px; font-size: 0.8125rem; }
+.chip-static:hover { border-color: var(--edge); }
+.chip-static[data-kind="estimate"]:hover { border-color: #b45309; }
+.hcal { display: flex; align-items: center; gap: 8px; margin-right: 4px; }
+.hcal .chip-static { min-width: 10.5rem; justify-content: center; }
+.hcal .btn { min-height: 40px; padding: 0 14px; }
+.cal-corner { display: none; align-items: center; gap: 8px; }
+.cal-corner .btn { min-height: 44px; }
+.hint-cal { display: none; }
+@media (min-width: 701px) {
+  .hint-cal { display: block; }
+}
+@media (max-width: 700px) {
+  .hcal { display: none; }
+  .cal-corner { display: flex; }
+  .hint-where { display: none; }
+  .hint-cal { display: block; }
 }

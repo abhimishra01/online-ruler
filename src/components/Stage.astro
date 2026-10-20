@@ -21,13 +21,15 @@ const units = [['cm', 'cm'], ['mm', 'mm'], ['in', 'in'], ['px', 'px'], ['both', 
       <p class="lede">{lede}</p>
       <p id="hint-full" class="hint hint-full">Press F for full screen. It gives the ruler the whole display.</p>
       <p id="hint-rotate" class="hint hint-rotate">Turn your phone sideways for a longer ruler.</p>
+      <p class="hint hint-cal">For exact size, calibrate with a card<span class="hint-where"> (top right)</span>.</p>
       <p class="hint hint-guide"><strong>A guide</strong> is a line you place at the end of your object. Press Add guide, then drag it.</p>
     </div>
 
     <div class="bar" role="toolbar" aria-label="Ruler controls">
-      <button type="button" id="chip" class="chip" data-kind="estimate" aria-haspopup="dialog">
-        <span class="dot" aria-hidden="true"></span><span id="chip-text">Not calibrated: sizes are an estimate</span><span class="sr-only">. Opens calibration.</span>
-      </button>
+      <div class="cal-corner">
+        <button type="button" class="btn" data-cal-open aria-haspopup="dialog">Calibrate</button>
+        <span class="chip chip-static" data-cal-chip data-kind="estimate"><span class="dot" aria-hidden="true"></span><span data-cal-chip-text>Estimate</span></span>
+      </div>
       <div id="seg" class="seg" role="radiogroup" aria-label="Unit">
         {units.map(([v, l]) => <button type="button" role="radio" data-unit={v} aria-checked={v === unit ? 'true' : 'false'}>{l}</button>)}
       </div>
@@ -63,14 +65,6 @@ const units = [['cm', 'cm'], ['mm', 'mm'], ['in', 'in'], ['px', 'px'], ['both', 
     </div>
 
     <div id="notice" class="notice" role="status" hidden></div>
-
-    <div id="callout" class="callout" hidden>
-      <p><strong>Step 1: make the ruler true to size.</strong> These sizes are a guess until you hold a credit card against the screen and match it to an outline.</p>
-      <div class="row">
-        <button type="button" id="callout-go" class="btn primary">Calibrate with a card</button>
-        <button type="button" id="callout-x" class="btn">Not now</button>
-      </div>
-    </div>
 
     <div id="readout" class="readout" hidden></div>
   </div>

@@ -22,7 +22,7 @@ export const pages: RulerPage[] = [
       {
         h2: 'Quick start in 3 steps',
         html: `<ol>
-<li><strong>Calibrate.</strong> Press the status chip at the top left of the ruler (it says "Not calibrated"). Hold a credit card against the screen and match its edges to the outline. This takes about 20 seconds.</li>
+<li><strong>Calibrate.</strong> Press Calibrate at the top right of the page (on a phone, it sits above the ruler). Hold a credit card against the screen and match its edges to the outline. This takes about 20 seconds.</li>
 <li><strong>Pick a unit.</strong> Choose cm, mm, inches or pixels. You can also show cm and inches together.</li>
 <li><strong>Measure.</strong> Put your object against the ruler, with one end at the zero mark in the corner. Pull a guide out of the ruler to mark the other end. The length appears at the bottom of the ruler.</li>
 </ol>
@@ -69,7 +69,7 @@ export const pages: RulerPage[] = [
         h2: 'A worked example: measuring a screw',
         html: `<p>Say you want the length of a wood screw. Here is the full routine, from start to finish.</p>
 <ol>
-<li>Calibrate with a card and run the check step. The status chip should read "Calibrated with card, checked".</li>
+<li>Calibrate with a card and run the check step. The status chip should read "Calibrated, checked".</li>
 <li>Choose millimeters. Screw sizes are often given in mm, such as 4 x 40.</li>
 <li>Lay the screw flat on the glass, below the top ruler. Put the flat of the head against the left ruler, or against a guide set at zero.</li>
 <li>Press Add guide, then drag the guide to the tip of the screw. The readout shows the length, for example "40 mm = 4 cm = 1 9/16 in".</li>
@@ -122,7 +122,7 @@ export const pages: RulerPage[] = [
         h2: 'A centimeter ruler for your screen',
         html: `<p>This page opens the online ruler in centimeters. Each numbered mark is 1 cm. Each small mark is 1 mm, and the middle mark between two numbers is 5 mm. The zero mark sits in the top left corner.</p>
 <p>To measure, put one end of the object at zero. Then pull a guide out of the ruler and move it to the other end. The tool shows the length, for example "9.21 cm = 92.1 mm = 3 5/8 in". Press Copy to put the text on your clipboard.</p>
-<p>For a true size ruler, calibrate first. Press the status chip at the top left, open the Card tab, and match a credit card to the outline. The status then reads "Calibrated with card".</p>`,
+<p>For a true size ruler, calibrate first. Press Calibrate at the top right (on a phone, above the ruler), open the Card tab, and match a credit card to the outline. The status then reads "Calibrated".</p>`,
       },
       {
         h2: 'Centimeters and millimeters',
@@ -319,7 +319,7 @@ export const pages: RulerPage[] = [
         h2: 'The credit card method',
         html: `<p>Credit and debit cards follow ISO/IEC 7810 ID-1: 85.60 by 53.98 mm. That is 3 3/8 by 2 1/8 inches. The size is the same all over the world.</p>
 <ol>
-<li>Press the status chip at the top left of the tool, then open the Card tab.</li>
+<li>Press Calibrate at the top right of the page, then open the Card tab.</li>
 <li>Hold the card flat against the screen. Line up one edge with the outline.</li>
 <li>Drag the grip on the right edge until the other edge matches. Zoom in with your eyes: look straight at the screen, not at an angle.</li>
 <li>Use the 0.1 mm buttons, or the arrow keys on the grip, for fine changes.</li>
@@ -383,7 +383,7 @@ export const pages: RulerPage[] = [
       {
         h2: 'How to calibrate on a phone',
         html: `<ol>
-<li>Open the page and press the status chip at the top left, where it says "Not calibrated".</li>
+<li>Open the page and press Calibrate at the top right.</li>
 <li>Hold a credit card flat on the screen. The outline shows the short side of the card, 53.98 mm, because the long side is wider than most phones.</li>
 <li>Drag the grip on the right of the outline until the card edge matches it. Use the 0.1 mm buttons to fine-tune.</li>
 <li>Press "My card matches". The tool then shows a coin outline. Lay a coin on it to check.</li>
