@@ -1,0 +1,9 @@
+---
+import RulerPage from '../components/RulerPage.astro';
+import { pages, bySlug } from '../data/pages.ts';
+export function getStaticPaths() {
+  return pages.filter((p) => p.slug).map((p) => ({ params: { slug: p.slug } }));
+}
+const { slug } = Astro.params;
+---
+<RulerPage page={bySlug(slug!)} />

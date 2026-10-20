@@ -1,0 +1,49 @@
+---
+// Tables built from the tested unit code, so the numbers cannot drift from the tool.
+import { toFraction, fmt, MM_PER_IN } from '../lib/units.js';
+import { COINS, PAPER } from '../lib/reference.js';
+import { CARD } from '../lib/calibration.js';
+interface Props { kind: 'methods' | 'fractions' | 'mm-in' | 'cm-in' | 'objects'; }
+const { kind } = Astro.props;
+const fractionRows = Array.from({ length: 16 }, (_, k) => {
+  const mm = ((k + 1) * MM_PER_IN) / 16;
+  return { frac: toFraction(mm).text, dec: fmt((k + 1) / 16, 4), mm: fmt(mm, 2) };
+});
+const mmRows = [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50, 100].map((mm) => ({ a: `${mm} mm`, dec: fmt(mm / MM_PER_IN, 3), frac: toFraction(mm).text }));
+const cmRows = [1, 2, 3, 4, 5, 10, 15, 20, 25, 30].map((cm) => ({ a: `${cm} cm`, dec: fmt((cm * 10) / MM_PER_IN, 2), frac: toFraction(cm * 10).text }));
+const methods = [
+  ['Credit card', 'About 20 seconds', 'You match a real object. The most exact of the four.', 'A credit or debit card'],
+  ['Coin or paper', 'About 20 seconds', 'You match a real object. Paper needs a wide screen.', 'A coin, or a sheet of Letter or A4'],
+  ['My device', 'Under 10 seconds', 'Approximate. It trusts the size listed for the device.', 'Your device name'],
+  ['Screen size', 'About 10 seconds', 'Approximate. It trusts the diagonal printed on the box.', 'The size in inches or cm'],
+];
+---
+{kind === 'methods' && (
+  <div class="tbl-wrap"><table class="tbl"><caption>Calibration methods compared</caption>
+    <thead><tr><th scope="col">Method</th><th scope="col">Time</th><th scope="col">How exact</th><th scope="col">You need</th></tr></thead>
+    <tbody>{methods.map((r) => <tr><th scope="row">{r[0]}</th><td>{r[1]}</td><td>{r[2]}</td><td>{r[3]}</td></tr>)}</tbody></table></div>
+)}
+{kind === 'fractions' && (
+  <div class="tbl-wrap"><table class="tbl"><caption>Inch fractions in 1/16 steps, with decimal inches and millimeters</caption>
+    <thead><tr><th scope="col">Fraction</th><th scope="col">Decimal (in)</th><th scope="col">Millimeters</th></tr></thead>
+    <tbody>{fractionRows.map((r) => <tr><th scope="row">{r.frac}</th><td>{r.dec}</td><td>{r.mm}</td></tr>)}</tbody></table></div>
+)}
+{kind === 'mm-in' && (
+  <div class="tbl-wrap"><table class="tbl"><caption>Millimeters to inches</caption>
+    <thead><tr><th scope="col">Millimeters</th><th scope="col">Decimal (in)</th><th scope="col">Nearest 1/16 in</th></tr></thead>
+    <tbody>{mmRows.map((r) => <tr><th scope="row">{r.a}</th><td>{r.dec}</td><td>{r.frac}</td></tr>)}</tbody></table></div>
+)}
+{kind === 'cm-in' && (
+  <div class="tbl-wrap"><table class="tbl"><caption>Centimeters to inches</caption>
+    <thead><tr><th scope="col">Centimeters</th><th scope="col">Decimal (in)</th><th scope="col">Nearest 1/16 in</th></tr></thead>
+    <tbody>{cmRows.map((r) => <tr><th scope="row">{r.a}</th><td>{r.dec}</td><td>{r.frac}</td></tr>)}</tbody></table></div>
+)}
+{kind === 'objects' && (
+  <div class="tbl-wrap"><table class="tbl"><caption>Objects of known size</caption>
+    <thead><tr><th scope="col">Object</th><th scope="col">Size</th><th scope="col">Source</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Credit or debit card</th><td>{CARD.w} by {CARD.h} mm ({toFraction(CARD.w).text} by {toFraction(CARD.h).text} in)</td><td>ISO/IEC 7810 ID-1</td></tr>
+      {PAPER.map((p) => <tr><th scope="row">{p.name}</th><td>{p.w} by {p.h} mm</td><td>Paper standard</td></tr>)}
+      {COINS.map((c) => <tr><th scope="row">{c.name}</th><td>{c.mm} mm across</td><td><a href={c.source} rel="noopener">{c.source.includes('usmint') ? 'US Mint' : 'European Commission'}</a></td></tr>)}
+    </tbody></table></div>
+)}

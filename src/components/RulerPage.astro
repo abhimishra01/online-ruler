@@ -1,0 +1,59 @@
+---
+import Base from '../layouts/Base.astro';
+import Stage from './Stage.astro';
+import AdSlot from './AdSlot.astro';
+import Faq from './Faq.astro';
+import RulerTable from './RulerTable.astro';
+import site from '../site.config.ts';
+import { url } from '../lib/url.ts';
+import { pages, type RulerPage } from '../data/pages.ts';
+import { faqBank } from '../data/faq.ts';
+interface Props { page: RulerPage; }
+const { page } = Astro.props;
+const link = (html: string) => html.replace(/href="@([^"]*)"/g, (_m, p) => `href="${url(p)}"`);
+const here = `${site.origin}/${page.slug ? page.slug + '/' : ''}`;
+const items = page.faq.map((k) => faqBank[k]);
+const person = { '@type': 'Person', name: 'Abhishek Mishra', jobTitle: 'Software Development Engineer', worksFor: { '@type': 'Organization', name: 'Oqu AI' }, url: 'https://bingemind.com/abhishek-mishra/' };
+const jsonLd: object[] = [
+  {
+    '@context': 'https://schema.org', '@type': 'WebApplication', name: site.name, url: here, description: page.description,
+    applicationCategory: site.category, operatingSystem: 'All', browserRequirements: 'Requires JavaScript', inLanguage: site.locale,
+    screenshot: `${site.origin}/og.png`, offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    author: person, publisher: { '@type': 'Organization', name: 'Bingemind', url: 'https://bingemind.com/' },
+  },
+  { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: items.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+];
+if (page.slug) {
+  jsonLd.push({
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Online ruler', item: `${site.origin}/` },
+      { '@type': 'ListItem', position: 2, name: page.crumb, item: here },
+    ],
+  });
+}
+const others = pages.filter((p) => p.slug !== page.slug);
+---
+<Base fullTitle={page.title} description={page.description} jsonLd={jsonLd}>
+  <Stage h1={page.h1} lede={page.lede} unit={page.unit} edges={page.edges} openCal={page.openCal} />
+  <AdSlot />
+  <nav aria-label="Ruler pages" class="mx-auto max-w-5xl px-4 pt-8">
+    <ul class="flex flex-wrap gap-2">
+      {others.map((p) => (
+        <li><a href={url(p.slug ? `/${p.slug}/` : '/')} class="inline-flex min-h-[44px] items-center rounded-full border border-edge bg-card px-4 text-sm font-semibold text-ink no-underline hover:border-brand-ink">{p.crumb}</a></li>
+      ))}
+    </ul>
+  </nav>
+  <article class="mx-auto max-w-5xl px-4 pt-10">
+    <div class="prose-site">
+      {page.sections.map((s) => (
+        <>
+          <h2>{s.h2}</h2>
+          <Fragment set:html={link(s.html)} />
+          {s.table && <RulerTable kind={s.table} />}
+        </>
+      ))}
+    </div>
+  </article>
+  <Faq items={items} />
+</Base>

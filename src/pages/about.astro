@@ -1,0 +1,20 @@
+---
+import Page from '../layouts/Page.astro';
+import site from '../site.config.ts';
+import { url } from '../lib/url.ts';
+---
+<Page title="About" description={`About ${site.name}, a free on-screen ruler that you calibrate with a credit card.`}>
+  <p>{site.name} is a free ruler for your screen. You calibrate it once with a credit card, a coin or your device size. After that it shows centimeters, millimeters and inches at real size. You pull guides out of the ruler to read a length.</p>
+  <h2>Who it is for</h2>
+  <p>Anyone who needs to measure a small flat object and has no ruler nearby: makers, sewers, jewelers, students, and people who shop online and want to check a size. It works on phones, tablets and computers. US users get inches with 1/16 marks. Metric users get cm and mm.</p>
+  <h2>How it works</h2>
+  <p>A web page does not know how big your screen is. So the tool asks you to match an object of known size, such as a credit card, to an outline. From that it works out the real size of a pixel on your screen. It saves this in your browser, one record for each screen. Before you calibrate, the ruler is an estimate and it says so.</p>
+  <p>The tool has limits. It is only as long as your screen. A calibration by eye is only as good as the match you make, so we add a check step with a second object. Read the notes on the <a href={url('/actual-size/')}>actual size ruler</a> page.</p>
+  <h2>Privacy</h2>
+  <p>Everything runs in your browser. We do not send your measurements anywhere. We do not ask you to create an account.</p>
+  <h2>Who made this</h2>
+  <p>This tool was built by <a href="https://bingemind.com/abhishek-mishra/">Abhishek Mishra</a>, a software development engineer (SDE) at Oqu AI, and is published by Bingemind.</p>
+  <p>Phone and WhatsApp: <a href="tel:+916376068337">+91 63760 68337</a> (<a href="https://wa.me/916376068337" rel="noopener">message on WhatsApp</a>).</p>
+  <h2>Contact</h2>
+  <p>Questions or ideas? Write to <a href={site.contactHref}>{site.contactLabel}</a> or visit the <a href={url('/contact/')}>Contact page</a>.</p>
+</Page>
