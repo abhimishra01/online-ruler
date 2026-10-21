@@ -236,14 +236,23 @@ export const pages: RulerPage[] = [
   },
   {
     slug: 'mm',
-    title: 'Ruler in mm: Free Online MM Ruler, Actual Size',
-    description: 'A free millimeter ruler for your screen. Calibrate with a credit card, then measure small parts in mm. Guides show the length. Works on phones.',
-    h1: 'Ruler in mm: Online Millimeter Ruler, Actual Size',
+    title: 'Online Ruler mm: Free Millimeter Ruler, Actual Size',
+    description: 'Free online ruler in mm for your screen. Calibrate with a credit card, then measure small parts in millimeters. Guides show the length. Works on phones.',
+    h1: 'Online Ruler mm: Millimeter Ruler in Actual Size',
     lede: 'A tick for every millimeter and a number every 10. Calibrate first for true size.',
     crumb: 'Ruler in mm',
     unit: 'mm', edges: 'top,left',
     faq: ['cmmm', 'ring', 'accurate', 'card', 'phone', 'free'],
     sections: [
+      {
+        h2: 'Online ruler in mm: how to use it',
+        html: `<ol>
+<li><strong>Calibrate.</strong> Hold a credit card against the screen and match its edges to the outline. A card is 85.60 by 53.98 mm, so the ruler can set its millimeter scale from it.</li>
+<li><strong>Place the part.</strong> Put one end of the part at the zero mark in the corner.</li>
+<li><strong>Read the mm.</strong> Pull a guide out to the other end. The length shows in millimeters, for example "92.1 mm".</li>
+</ol>
+<p>Until you calibrate, the ruler shows an estimate and says so. Check the result with a coin: a US dime is 17.91 mm wide.</p>`,
+      },
       {
         h2: 'A millimeter ruler for small parts',
         html: `<p>This page opens the online ruler in millimeters. There is a tick for every millimeter, a longer tick at 5 mm, and a number every 10 mm. Use it for screws, beads, gemstones, watch straps, film and other small flat parts.</p>
