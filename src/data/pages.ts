@@ -17,7 +17,7 @@ export const pages: RulerPage[] = [
     lede: 'Calibrate with a credit card, then measure. Pull a guide out of any ruler to read a length.',
     crumb: 'Online ruler',
     unit: 'both', edges: 'top,left',
-    faq: ['accurate', 'card', 'bigsmall', 'zoom', 'phone', 'devices', 'privacy', 'free'],
+    faq: ['accurate', 'card', 'inchcm', 'bigsmall', 'zoom', 'phone', 'camera', 'devices', 'privacy', 'free'],
     sections: [
       {
         h2: 'Quick start in 3 steps',
@@ -116,7 +116,7 @@ export const pages: RulerPage[] = [
     lede: 'Millimeter marks, a number at each centimeter. Calibrate first for true size.',
     crumb: 'Ruler in cm',
     unit: 'cm', edges: 'top,left',
-    faq: ['cmmm', 'accurate', 'card', 'bigsmall', 'phone', 'free'],
+    faq: ['cmmm', 'inchcm', 'accurate', 'card', 'bigsmall', 'phone', 'free'],
     sections: [
       {
         h2: 'A centimeter ruler for your screen',
@@ -178,7 +178,7 @@ export const pages: RulerPage[] = [
     lede: 'Marks for halves, quarters, eighths and sixteenths. Calibrate first for true size.',
     crumb: 'Inch ruler',
     unit: 'in', edges: 'top,left',
-    faq: ['fractions', 'oneinch', 'accurate', 'card', 'bigsmall', 'free'],
+    faq: ['fractions', 'oneinch', 'twelve', 'inchcm', 'accurate', 'card', 'bigsmall', 'free'],
     sections: [
       {
         h2: 'An inch ruler with 1/16 marks',

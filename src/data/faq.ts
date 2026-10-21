@@ -20,6 +20,14 @@ export const faqBank: Record<string, { q: string; a: string }> = {
     q: 'How do I find 1 inch on my screen?',
     a: 'Calibrate first. Then pick the inch unit. The long mark with the number 1 is one inch from the corner. A US quarter is 24.26 mm wide, which is a little less than one inch (25.4 mm), so it fits inside that span with a gap.',
   },
+  inchcm: {
+    q: 'How do I change inches to cm on the online ruler?',
+    a: 'One inch is exactly 2.54 cm. Pull a guide out to the end of your object. The tool shows the length in your chosen unit and in the other units too, so an inch reading also appears in cm and mm. You can also divide mm by 25.4 to get inches.'
+  },
+  twelve: {
+    q: 'Can I use a 12 inch online ruler?',
+    a: 'Twelve inches is 304.8 mm. The ruler can only be as long as your screen. A wide desktop monitor can show 12 inches. Most phones cannot, and a small laptop may not. Calibrate first, then check how far the scale runs.'
+  },
   cmmm: {
     q: 'How do I measure in cm and mm online?',
     a: 'Choose cm or mm in the unit switch. Place the object against the ruler from the zero mark at the corner. Each small mark is 1 mm and every tenth mark is 1 cm. Pull a guide out of the ruler to mark the far edge and read the length.',
