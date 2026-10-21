@@ -13,7 +13,7 @@ const { page } = Astro.props;
 const link = (html: string) => html.replace(/href="@([^"]*)"/g, (_m, p) => `href="${url(p)}"`);
 const here = `${site.origin}/${page.slug ? page.slug + '/' : ''}`;
 const items = page.faq.map((k) => faqBank[k]);
-const person = { '@type': 'Person', name: 'Abhishek Mishra', jobTitle: 'Software Development Engineer', worksFor: { '@type': 'Organization', name: 'Oqu AI' }, url: 'https://bingemind.com/abhishek-mishra/' };
+const person = { '@type': 'Person', name: 'Abhishek Mishra', jobTitle: 'Software Development Engineer', url: 'https://bingemind.com/abhishek-mishra/' };
 const jsonLd: object[] = [
   {
     '@context': 'https://schema.org', '@type': 'WebApplication', name: site.name, url: here, description: page.description,
